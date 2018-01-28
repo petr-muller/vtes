@@ -3,8 +3,12 @@ python:
   - '3.6'
 
 install:
-  - pip install codacy-coverage
+  - pip install codacy-coverage codecov python-coveralls
 
 script:
   - python setup.py test
+
+after_success:
   - python-codacy-coverage -r coverage.xml
+  - codecov
+  - coveralls
