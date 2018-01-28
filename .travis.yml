@@ -2,5 +2,9 @@ language: python
 python:
   - '3.6'
 
+install:
+  - pip install codacy-coverage
+
 script:
-  python setup.py test
+  - python setup.py test
+  - python-codacy-coverage -r coverage.xml
