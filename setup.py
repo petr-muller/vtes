@@ -21,7 +21,7 @@ setup(
     ],
     keywords="ccg vtes",
     packages=find_packages(exclude=["tests"]),
-    setup_requires=['pytest-runner', 'pytest-bdd', 'pytest-pylint', 'pytest-mypy'],
+    setup_requires=['pytest-runner', 'pytest-bdd', 'pytest-pylint', 'pytest-mypy', 'pytest-cov'],
     tests_require=['pytest', 'pylint', 'mypy'],
     install_requires=[],
     extras_requires={'dev': ['mypy', 'pylint', 'pytest', 'pytest-bdd']},
