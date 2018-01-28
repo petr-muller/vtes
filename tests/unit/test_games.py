@@ -1,3 +1,5 @@
+# I do not have that high criteria for test code
+# pylint: disable=missing-docstring
 from vtes.game import Game
 
 def test_game():

@@ -1,3 +1,6 @@
+# I do not have that high criteria for test code
+# pylint: disable=missing-docstring
+
 from unittest.mock import Mock
 import pytest
 from vtes.run import ParsePlayerAction

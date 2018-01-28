@@ -1,6 +1,11 @@
+"""Entry point for the `vtes` command"""
+
 from argparse import Action, ArgumentParser
 
 class ParsePlayerAction(Action):
+    """This custom argparse Action parses a list of players"""
+    # too-few-public-methods: Action only needs to override __call__
+    # pylint: disable=too-few-public-methods
     def __init__(self, *args, **kwargs):
         Action.__init__(self, *args, **kwargs)
 
@@ -11,6 +16,8 @@ class ParsePlayerAction(Action):
             raise ValueError("VtES expects three to six players")
 
 def main():
+    """Entry point for the `vtes` command"""
+
     parser = ArgumentParser()
     subcommands = parser.add_subparsers()
 
