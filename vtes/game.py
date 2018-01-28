@@ -1,5 +1,12 @@
-# just a stub for now
-# pylint: disable=all
+"""Log of a single VtES game"""
+
+from typing import Sequence
+
 class Game:
-    def __init__(self, table):
-        self.table = table
+    """Represents a VtES game"""
+    # pylint: disable=too-few-public-methods
+    def __init__(self, table: Sequence[str]) -> None:
+        self.table: Sequence[str] = table
+
+    def __str__(self) -> str:
+        return " \u25b6 ".join(self.table)

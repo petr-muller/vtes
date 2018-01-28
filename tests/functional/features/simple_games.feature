@@ -18,3 +18,9 @@ Scenario Outline: Refuse games with not three to six players
 
     Examples: Vertical
       | count | 0 | 1 | 2 | 7 |
+
+Scenario: List logged game
+    Given I logged five games
+    When I invoke vtes games
+    Then command finishes successfuly
+    And five games are listed
