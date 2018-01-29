@@ -1,12 +1,12 @@
 """Entry point for the `vtes` command"""
 
-from pathlib import Path
+import pathlib
 from argparse import Action, ArgumentParser
 from typing import Sequence
 from vtes.game import Game
 from vtes.store import load_store, GameStore
 
-def games_command(journal_path: Path) -> None:
+def games_command(journal_path: pathlib.Path) -> None:
     """List all games in the store"""
     with journal_path.open('rb') as journal_file:
         store = load_store(journal_file)
@@ -16,7 +16,7 @@ def games_command(journal_path: Path) -> None:
     for index, game in enumerate(store):
         print(f"{index:{count_size}d}: {game}")
 
-def add_command(players: Sequence[str], journal_path: Path) -> None:
+def add_command(players: Sequence[str], journal_path: pathlib.Path) -> None:
     """Create a new Game and add it to the store"""
     if journal_path.exists():
         with journal_path.open('rb') as journal_file:
@@ -43,12 +43,12 @@ class ParsePlayerAction(Action):
         else:
             raise ValueError("VtES expects three to six players")
 
-def main():
+def main(): # pragma: no cover
     """Entry point for the `vtes` command"""
 
     parser = ArgumentParser()
     parser.add_argument("--journal-file", dest="journal_path",
-                        default=Path.home() / ".vtes-journal", type=Path)
+                        default=pathlib.Path.home() / ".vtes-journal", type=pathlib.Path)
     subcommands = parser.add_subparsers()
 
     add = subcommands.add_parser("add")
@@ -64,4 +64,4 @@ def main():
     command(**vars(args))
 
 if __name__ == "__main__":
-    main()
+    main() # pragma: no cover

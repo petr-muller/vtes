@@ -24,6 +24,5 @@ setup(
     setup_requires=['pytest-runner', 'pytest-bdd', 'pytest-pylint', 'pytest-mypy', 'pytest-cov'],
     tests_require=['pytest', 'pylint', 'mypy'],
     install_requires=[],
-    extras_requires={'dev': ['mypy', 'pylint', 'pytest', 'pytest-bdd']},
     entry_points={'console_scripts': ['vtes=vtes.run:main']}
 )
