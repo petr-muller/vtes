@@ -25,3 +25,18 @@ Scenario: List logged game
     Then command finishes successfuly
     And five games are listed
     And listed games have identifiers
+
+Scenario: Add games with victory points
+    When I invoke vtes add
+    And I specify players with victory points
+    And I submit the command
+    Then command finishes successfuly
+
+Scenario Outline: List game with victory points
+    Given I logged game with <count> players where <winning> player had all VPs
+    When I invoke vtes games
+    Then game with <count> players is listed with <winning> player having all VPs and GW
+
+    Examples: Vertical
+      | count   | 3 | 5 | 5 | 6 |
+      | winning | 2 | 0 | 4 | 3 |

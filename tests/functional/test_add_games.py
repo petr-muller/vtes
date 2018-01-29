@@ -3,6 +3,8 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 
 import subprocess
+from random import randrange
+
 import pytest
 from pytest_bdd import given, when, then, scenarios
 
@@ -33,6 +35,13 @@ def vtes_add(vtes_command):
 def x_players(count, vtes_command):
     vtes_command.add_arguments([f"player_{x}" for x in range(int(count))])
 
+@when("I specify players with victory points")
+def x_players_with_vps(vtes_command):
+    count = 5
+    points = [0] * count
+    points[randrange(count)] = count
+    vtes_command.add_arguments([f"player_{x}:{points[x]}" for x in range(int(count))])
+
 @when('I submit the command')
 def execute(vtes_command):
     vtes_command.execute()
@@ -57,6 +66,18 @@ def log_five_games(tmpdir):
         command.execute()
         assert command.completed.returncode == 0
 
+@given('I logged game with <count> players where <winning> player had all VPs')
+def log_game_with_vp(tmpdir, count, winning):
+    count = int(count)
+    winning = int(winning)
+
+    command = vtes_command(tmpdir)
+    points = [0] * count
+    points[winning] = count
+    players = [f"player_{x}:{points[x]}" for x in range(count)]
+    command.add_arguments(["add"] + players)
+    command.execute()
+
 @when('I invoke vtes games')
 def vtes_games(vtes_command):
     vtes_command.add_arguments(["games"])
@@ -75,3 +96,15 @@ def identifiers(vtes_command):
     assert len(output) == 5
     for item, line in enumerate(output):
         assert line.startswith(f"{item}: ")
+
+@then('game with <count> players is listed with <winning> player having all VPs and GW')
+def list_game_with_vp(vtes_command, count, winning):
+    count = int(count)
+    winning = int(winning)
+
+    players = [f"player_{x}" for x in range(count)]
+    players[winning] = f"{players[winning]} {count}VP GW"
+    players = " \u25b6 ".join(players)
+
+    output = vtes_command.completed.stdout
+    assert output.startswith(f"0: {players}")
