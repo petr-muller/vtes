@@ -24,3 +24,4 @@ Scenario: List logged game
     When I invoke vtes games
     Then command finishes successfuly
     And five games are listed
+    And listed games have identifiers

@@ -68,3 +68,10 @@ def five_games_listed(vtes_command):
     assert len(output) == 5
     for line in output:
         assert line.endswith("one \u25b6 two \u25b6 three \u25b6 four \u25b6 five")
+
+@then('listed games have identifiers')
+def identifiers(vtes_command):
+    output = [line for line in vtes_command.completed.stdout.split("\n") if line]
+    assert len(output) == 5
+    for item, line in enumerate(output):
+        assert line.startswith(f"{item}: ")

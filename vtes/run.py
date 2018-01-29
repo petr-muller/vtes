@@ -11,8 +11,10 @@ def games_command(journal_path: Path) -> None:
     with journal_path.open('rb') as journal_file:
         store = load_store(journal_file)
 
-    for game in store:
-        print(game)
+    # ugh. automatically compute padding size
+    count_size = len(str(len(store)))
+    for index, game in enumerate(store):
+        print(f"{index:{count_size}d}: {game}")
 
 def add_command(players: Sequence[str], journal_path: Path) -> None:
     """Create a new Game and add it to the store"""
