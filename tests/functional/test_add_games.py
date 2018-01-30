@@ -42,15 +42,30 @@ def x_players_with_vps(vtes_command):
     points[randrange(count)] = count
     vtes_command.add_arguments([f"player_{x}:{points[x]}" for x in range(int(count))])
 
+DECKS_5 = ("Pascek Bruise & Vote", "Synesios Summon History", "Malgorzata", "BH Assamite Rush",
+           "Anarchy in the Wild West")
+PLAYERS_5 = ("Zerato", "Vladish", "preston", "XZealot", "Afri")
+
+@when("I specify players with decks and victory points")
+def x_players_with_decks_and_vps(vtes_command):
+    points = (2, 0, 0, 1, 2)
+    arguments = [f"{player}({deck}):{vp}" for player, deck, vp in zip(PLAYERS_5, DECKS_5, points)]
+    vtes_command.add_arguments(["add"] + arguments)
+
+@when("I specify players with decks")
+def x_players_with_decks(vtes_command):
+    arguments = [f"{player}({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
+    vtes_command.add_arguments(["add"] + arguments)
+
 @when('I submit the command')
 def execute(vtes_command):
     vtes_command.execute()
 
-@then('command finishes successfuly')
+@then('command finishes successfully')
 def check_command_passed(vtes_command):
     assert vtes_command.completed.returncode == 0
 
-@then('command finishes unsuccessfuly')
+@then('command finishes unsuccessfully')
 def check_command_failed(vtes_command):
     assert vtes_command.completed.returncode != 0
 
@@ -77,6 +92,31 @@ def log_game_with_vp(tmpdir, count, winning):
     players = [f"player_{x}:{points[x]}" for x in range(count)]
     command.add_arguments(["add"] + players)
     command.execute()
+
+@given('I logged game with decks and victory points')
+def log_game_with_decks_and_vp(tmpdir):
+    command = vtes_command(tmpdir)
+    points = (2, 0, 0, 1, 2)
+    arguments = [f"{player}({deck}):{vp}" for player, deck, vp in zip(PLAYERS_5, DECKS_5, points)]
+    command.add_arguments(["add"] + arguments)
+    command.execute()
+
+@given('I logged game with decks')
+def log_game_with_decks(tmpdir):
+    command = vtes_command(tmpdir)
+    arguments = [f"{player}({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
+    command.add_arguments(["add"] + arguments)
+    command.execute()
+
+@then('game is listed with decks and victory points')
+def decks_and_victory_points():
+    # TODO # pylint: disable=fixme
+    pass
+
+@then('game is listed with decks')
+def decks():
+    # TODO # pylint: disable=fixme
+    pass
 
 @when('I invoke vtes games')
 def vtes_games(vtes_command):
