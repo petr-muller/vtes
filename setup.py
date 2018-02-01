@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="vtes",
-    version="0.0.0",
+    version="0.0.2",
     description="A VtES game logger",
     # long_description=
     # url=

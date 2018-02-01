@@ -108,16 +108,6 @@ def log_game_with_decks(tmpdir):
     command.add_arguments(["add"] + arguments)
     command.execute()
 
-@then('game is listed with decks and victory points')
-def decks_and_victory_points():
-    # TODO # pylint: disable=fixme
-    pass
-
-@then('game is listed with decks')
-def decks():
-    # TODO # pylint: disable=fixme
-    pass
-
 @when('I invoke vtes games')
 def vtes_games(vtes_command):
     vtes_command.add_arguments(["games"])
@@ -146,5 +136,20 @@ def list_game_with_vp(vtes_command, count, winning):
     players[winning] = f"{players[winning]} {count}VP GW"
     players = " \u25b6 ".join(players)
 
+    output = vtes_command.completed.stdout
+    assert output.startswith(f"0: {players}")
+
+@then('game is listed with decks and victory points')
+def decks_and_victory_points(vtes_command):
+    points = [f" {vp}VP" if vp else "" for vp in (2, 0, 0, 1, 2)]
+    players = [f"{player} ({deck}){vp}" for player, deck, vp in zip(PLAYERS_5, DECKS_5, points)]
+    players = " \u25b6 ".join(players)
+    output = vtes_command.completed.stdout
+    assert output.startswith(f"0: {players}")
+
+@then('game is listed with decks')
+def decks(vtes_command):
+    players = [f"{player} ({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
+    players = " \u25b6 ".join(players)
     output = vtes_command.completed.stdout
     assert output.startswith(f"0: {players}")

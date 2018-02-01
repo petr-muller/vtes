@@ -1,6 +1,30 @@
 # I do not have that high criteria for test code
 # pylint: disable=missing-docstring
-from vtes.game import Game
+from vtes.game import Game, parse_player
+
+def test_parse_player():
+    player = parse_player("vtesser")
+    assert player.name == "vtesser"
+    assert player.points is None
+    assert player.deck is None
+
+def test_parse_player_deck():
+    player = parse_player("vtesser(!Gangrel Bleed)")
+    assert player.name == "vtesser"
+    assert player.points is None
+    assert player.deck == "!Gangrel Bleed"
+
+def test_parse_player_deck_vp():
+    player = parse_player("Afri(Ventrue Lawfirm):3")
+    assert player.name == "Afri"
+    assert player.points == 3
+    assert player.deck == "Ventrue Lawfirm"
+
+def test_parse_player_vp():
+    player = parse_player("Afri:4")
+    assert player.name == "Afri"
+    assert player.points == 4
+    assert player.deck is None
 
 def test_game():
     table = ("P1", "P2", "P3", "P4", "P5")
