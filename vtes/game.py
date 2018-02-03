@@ -2,6 +2,13 @@
 
 import re
 from typing import Sequence
+from blessings import Terminal
+
+TERM = Terminal()
+
+def set_colorize(colorize: bool) -> None:
+    """Toggle colorizing of __str__ methods of Game"""
+    Game.COLORIZE = colorize
 
 PLAYER_PATTERN = r"(?P<name>[^(:]+)(\((?P<deck>.*)\)){0,1}(:(?P<points>\d(\.5){0,1})){0,1}"
 
@@ -34,6 +41,7 @@ def parse_player(raw_player: str) -> Player:
 class Game:
     """Represents a VtES game"""
     # pylint: disable=too-few-public-methods
+    COLORIZE = False
     def __init__(self, table: Sequence[str]) -> None:
         self.table: Sequence[str] = table
         self.winning_points: float = None
@@ -61,7 +69,12 @@ class Game:
         players = []
         for player in self.player_results:
             players.append(str(player))
-            if self.winner and player.name == self.winner:
+            if player.name == self.winner:
                 players[-1] += " GW"
+
+            if Game.COLORIZE and player.name == self.winner:
+                players[-1] = TERM.green + players[-1] + TERM.normal
+            elif Game.COLORIZE and player.points:
+                players[-1] = TERM.bright_red + players[-1] + TERM.normal
 
         return " \u25b6 ".join(players)

@@ -1,6 +1,6 @@
 # I do not have that high criteria for test code
 # pylint: disable=missing-docstring
-from vtes.game import Game, parse_player
+from vtes.game import Game, parse_player, set_colorize
 
 def test_parse_player():
     player = parse_player("vtesser")
@@ -49,3 +49,11 @@ def test_game_with_draw():
     assert str(game) == "P1 \u25b6 P2 2VP \u25b6 P3 2VP \u25b6 P4 1VP \u25b6 P5"
     assert game.winner is None
     assert game.winning_points is None
+
+def test_colorize():
+    table = ("P1:0", "P2:2", "P3:3", "P4", "P5")
+    game = Game(table)
+    set_colorize(True)
+    assert str(game) == "P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5"
+    set_colorize(False)
+    assert str(game) == "P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5"

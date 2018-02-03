@@ -3,7 +3,7 @@
 import pathlib
 from argparse import Action, ArgumentParser
 from typing import Sequence
-from vtes.game import Game
+from vtes.game import Game, set_colorize
 from vtes.store import load_store, GameStore
 
 def games_command(journal_path: pathlib.Path) -> None:
@@ -11,6 +11,7 @@ def games_command(journal_path: pathlib.Path) -> None:
     with journal_path.open('rb') as journal_file:
         store = load_store(journal_file)
 
+    set_colorize(True)
     # ugh. automatically compute padding size
     count_size = len(str(len(store)))
     for index, game in enumerate(store):
