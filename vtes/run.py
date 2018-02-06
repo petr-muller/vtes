@@ -3,6 +3,7 @@
 import pathlib
 from argparse import Action, ArgumentParser
 from typing import Sequence
+from tabulate import tabulate
 from vtes.game import Game, set_colorize
 from vtes.store import load_store, GameStore
 
@@ -17,6 +18,7 @@ def games_command(journal_path: pathlib.Path) -> None:
     for index, game in enumerate(store):
         print(f"{index:{count_size}d}: {game}")
 
+
 def add_command(players: Sequence[str], journal_path: pathlib.Path) -> None:
     """Create a new Game and add it to the store"""
     if journal_path.exists():
@@ -30,6 +32,15 @@ def add_command(players: Sequence[str], journal_path: pathlib.Path) -> None:
 
     with journal_path.open('wb') as journal_file:
         store.save(journal_file)
+
+
+def stats_command(journal_path: pathlib.Path) -> None:
+    """Output various statistics"""
+    with journal_path.open('rb') as journal_file:
+        store = load_store(journal_file)
+
+    print(tabulate(store.rankings(), headers=('Player', 'GW', 'VP', 'Games')))
+
 
 class ParsePlayerAction(Action):
     """This custom argparse Action parses a list of players"""
@@ -58,6 +69,9 @@ def main(): # pragma: no cover
 
     games = subcommands.add_parser("games")
     games.set_defaults(func=games_command)
+
+    stats = subcommands.add_parser("stats")
+    stats.set_defaults(func=stats_command)
 
     args = parser.parse_args()
     command = args.func

@@ -24,6 +24,6 @@ setup(
     setup_requires=['pytest-runner', 'pytest-bdd', 'pytest-pylint', 'pytest-mypy', 'pytest-cov',
                     'pyfakefs'],
     tests_require=['pytest', 'pylint', 'mypy', 'blessings'],
-    install_requires=["blessings"],
+    install_requires=["blessings", "tabulate"],
     entry_points={'console_scripts': ['vtes=vtes.run:main']}
 )

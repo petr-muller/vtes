@@ -2,7 +2,7 @@
 # pylint: disable=missing-docstring
 
 from io import BytesIO
-from vtes.store import GameStore, load_store
+from vtes.store import GameStore, load_store, Ranking
 from vtes.game import Game
 
 def test_store():
@@ -31,3 +31,42 @@ def test_store_save_load():
     games = list(new_store)
     assert str(games[0]) == "1 \u25b6 2 \u25b6 3 \u25b6 4 \u25b6 5"
     assert str(games[1]) == "A \u25b6 B \u25b6 C \u25b6 D \u25b6 E"
+
+def test_rankings():
+    ranking = Ranking("player", 0, 0, 0)
+    ranking_same = Ranking("player", 0, 0, 0)
+    assert ranking.player == "player"
+    assert ranking.wins == 0
+    assert ranking.points == 0
+    assert ranking.games == 0
+
+    assert ranking == ranking
+    assert ranking == ranking_same
+
+    ranking = Ranking("player1", 1, 2.5, 3)
+    assert ranking.player == "player1"
+    assert ranking.wins == 1
+    assert ranking.points == 2.5
+    assert ranking.games == 3
+    assert ranking != ranking_same
+    assert ranking == ranking
+
+def test_rankings_comparison():
+    assert Ranking("one", 1, 3, 3) > Ranking("two", 0, 4, 4)
+    assert Ranking("one", 1, 5, 3) > Ranking("two", 1, 4, 4)
+    assert Ranking("one", 1, 4, 5) > Ranking("two", 1, 4, 4)
+
+def test_store_rankings():
+    store = GameStore()
+    store.add(Game(("1:3", "2:1", "3:1", "4", "5")))
+    store.add(Game(("A:4", "2:1", "C", "D", "E")))
+    rankings = store.rankings()
+    print(rankings)
+    print(rankings[0])
+    assert len(rankings) == 9
+    assert rankings[0] == Ranking("A", 1, 4, 1)
+    assert rankings[1] == Ranking("1", 1, 3, 1)
+    assert rankings[2] == Ranking("2", 0, 2, 2)
+    assert rankings[3] == Ranking("3", 0, 1, 1)
+    for loser in ("4", "5", "C", "D", "E"):
+        assert Ranking(loser, 0, 0, 1) in rankings

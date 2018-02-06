@@ -6,7 +6,7 @@ from io import BytesIO
 import pathlib
 import pytest
 
-from vtes.run import ParsePlayerAction, games_command, add_command
+from vtes.run import ParsePlayerAction, games_command, add_command, stats_command
 from vtes.store import GameStore, load_store
 
 from vtes.game import Game
@@ -14,8 +14,8 @@ from vtes.game import Game
 @pytest.fixture
 def store_with_two_games():
     store = GameStore()
-    store.add(Game(("1", "2", "3", "4", "5")))
-    store.add(Game(("A", "B", "C", "D", "E")))
+    store.add(Game(("1:3", "2:2", "3", "4", "5")))
+    store.add(Game(("A:2", "B:1", "C:1", "D:1", "E")))
     return store
 
 def test_parse_players():
@@ -39,6 +39,17 @@ def test_games_command(mock_print, store_with_two_games):
         games_command(mock_path)
 
     assert mock_print.call_count == 2
+
+@patch('builtins.print')
+def test_stats_command(mock_print, store_with_two_games):
+    with BytesIO() as fakefile:
+        store_with_two_games.save(fakefile)
+        fakefile.seek(0, 0)
+        mock_path = MagicMock(pathlib.Path)
+        mock_path.open.return_value = fakefile
+        stats_command(mock_path)
+
+    assert mock_print.call_count == 1
 
 def test_add_command_when_exists(store_with_two_games, fs):
     # pylint: disable=invalid-name, unused-argument

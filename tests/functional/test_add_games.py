@@ -2,30 +2,13 @@
 # redefined-outer-name: fixtures unfortunately trigger this
 # pylint: disable=missing-docstring, redefined-outer-name
 
-import subprocess
 from random import randrange
 
-import pytest
 from pytest_bdd import given, when, then, scenarios
 
-scenarios('features')
+from tests.fixtures.commands import vtes_command
 
-class Executable:
-    def __init__(self, command=()):
-        self.command = list(command)
-        self.completed = None
-
-    def add_arguments(self, arguments):
-        self.command.extend(arguments)
-
-    def execute(self):
-        self.completed = subprocess.run(self.command, stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE, encoding='utf-8')
-
-@pytest.fixture
-def vtes_command(tmpdir):
-    journal = tmpdir.join('vtes-journal')
-    return Executable(("python", "-m", "vtes.run", "--journal-file", str(journal)))
+scenarios('features/simple_games.feature')
 
 @when('I invoke vtes add')
 def vtes_add(vtes_command):
@@ -56,14 +39,6 @@ def x_players_with_decks_and_vps(vtes_command):
 def x_players_with_decks(vtes_command):
     arguments = [f"{player}({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
     vtes_command.add_arguments(["add"] + arguments)
-
-@when('I submit the command')
-def execute(vtes_command):
-    vtes_command.execute()
-
-@then('command finishes successfully')
-def check_command_passed(vtes_command):
-    assert vtes_command.completed.returncode == 0
 
 @then('command finishes unsuccessfully')
 def check_command_failed(vtes_command):
