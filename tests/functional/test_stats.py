@@ -27,7 +27,6 @@ def vtes_stats(vtes_command):
 @then('player rankings are listed')
 def listed_player_rankings(vtes_command):
     output = vtes_command.completed.stdout.split("\n")
-    print(output)
     assert output[0] == "Player           GW    VP    Games"
     assert output[1] == "-------------  ----  ----  -------"
     assert output[2] == "Afri              1     6        5"
@@ -39,7 +38,9 @@ def listed_player_rankings(vtes_command):
     assert output[8] == "Nebojsa           0     2        2"
     assert output[9] == "preston           0     1        1"
     assert output[10] == "ShaneS_A tier     0     0        2"
-    assert "Zerato            0     0        1" in output[11:]
-    assert "Felipe            0     0        1" in output[11:]
-    assert "gNat              0     0        1" in output[11:]
-    assert "Blooded           0     0        1" in output[11:]
+    assert "Zerato            0     0        1" in output[11:15]
+    assert "Felipe            0     0        1" in output[11:15]
+    assert "gNat              0     0        1" in output[11:15]
+    assert "Blooded           0     0        1" in output[11:15]
+    assert output[15] == ""
+    assert output[16] == "Overall statistics: 5 games with 13 players"

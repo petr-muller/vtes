@@ -39,6 +39,8 @@ def test_rankings():
     assert ranking.wins == 0
     assert ranking.points == 0
     assert ranking.games == 0
+    assert str(ranking) == "player GW=0 VP=0 games=0"
+    assert repr(ranking) == "player GW=0 VP=0 games=0"
 
     assert ranking == ranking
     assert ranking == ranking_same
@@ -61,8 +63,6 @@ def test_store_rankings():
     store.add(Game(("1:3", "2:1", "3:1", "4", "5")))
     store.add(Game(("A:4", "2:1", "C", "D", "E")))
     rankings = store.rankings()
-    print(rankings)
-    print(rankings[0])
     assert len(rankings) == 9
     assert rankings[0] == Ranking("A", 1, 4, 1)
     assert rankings[1] == Ranking("1", 1, 3, 1)

@@ -39,7 +39,10 @@ def stats_command(journal_path: pathlib.Path) -> None:
     with journal_path.open('rb') as journal_file:
         store = load_store(journal_file)
 
-    print(tabulate(store.rankings(), headers=('Player', 'GW', 'VP', 'Games')))
+    rankings = store.rankings()
+    print(tabulate(rankings, headers=('Player', 'GW', 'VP', 'Games')))
+    print("")
+    print(f"Overall statistics: {len(store)} games with {len(rankings)} players")
 
 
 class ParsePlayerAction(Action):

@@ -49,7 +49,7 @@ def test_stats_command(mock_print, store_with_two_games):
         mock_path.open.return_value = fakefile
         stats_command(mock_path)
 
-    assert mock_print.call_count == 1
+    assert mock_print.call_count == 3
 
 def test_add_command_when_exists(store_with_two_games, fs):
     # pylint: disable=invalid-name, unused-argument
