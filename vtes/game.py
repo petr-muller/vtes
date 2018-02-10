@@ -42,6 +42,19 @@ class Game:
     """Represents a VtES game"""
     # pylint: disable=too-few-public-methods
     COLORIZE = False
+
+    @staticmethod
+    def _make_player_line(player: Player, winner: str) -> str:
+        player_line = str(player)
+        if player.name == winner:
+            player_line += " GW"
+        if Game.COLORIZE and player.name == winner:
+            player_line = TERM.green + player_line + TERM.normal
+        elif Game.COLORIZE and player.points:
+            player_line = TERM.bright_red + player_line + TERM.normal
+
+        return player_line
+
     def __init__(self, table: Sequence[str]) -> None:
         self.table: Sequence[str] = table
         self.winning_points: float = None
@@ -68,13 +81,6 @@ class Game:
     def __str__(self) -> str:
         players = []
         for player in self.player_results:
-            players.append(str(player))
-            if player.name == self.winner:
-                players[-1] += " GW"
-
-            if Game.COLORIZE and player.name == self.winner:
-                players[-1] = TERM.green + players[-1] + TERM.normal
-            elif Game.COLORIZE and player.points:
-                players[-1] = TERM.bright_red + players[-1] + TERM.normal
+            players.append(Game._make_player_line(player, self.winner))
 
         return " \u25b6 ".join(players)
