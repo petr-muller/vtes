@@ -44,14 +44,23 @@ class Game:
     COLORIZE = False
 
     @staticmethod
+    def _colorize_player_line(line: str, winner: bool = False, points: float = 0) -> str:
+        if winner:
+            return TERM.green + line + TERM.normal
+        elif points:
+            return TERM.bright_red + line + TERM.normal
+
+        return line
+
+    @staticmethod
     def _make_player_line(player: Player, winner: str) -> str:
         player_line = str(player)
+
         if player.name == winner:
             player_line += " GW"
-        if Game.COLORIZE and player.name == winner:
-            player_line = TERM.green + player_line + TERM.normal
-        elif Game.COLORIZE and player.points:
-            player_line = TERM.bright_red + player_line + TERM.normal
+
+        if Game.COLORIZE:
+            return Game._colorize_player_line(player_line, player.name == winner, player.points)
 
         return player_line
 
