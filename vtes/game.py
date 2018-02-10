@@ -74,13 +74,15 @@ class Game:
             player = parse_player(item)
             self.player_results.append(player)
 
-            if player.points is not None:
-                if player.points > 1 and player.points > (self.winning_points or 0):
-                    self.winning_points = player.points
-                    self.winner = player.name
-                elif player.points > 1 and player.points == self.winning_points:
-                    self.winning_points = None
-                    self.winner = None
+            points = player.points or 0
+            winning_points = self.winning_points or 1
+
+            if points > winning_points:
+                self.winning_points = points
+                self.winner = player.name
+            elif points == winning_points:
+                self.winning_points = None
+                self.winner = None
 
     @property
     def players(self) -> Sequence[str]:
