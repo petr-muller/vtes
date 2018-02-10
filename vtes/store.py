@@ -2,7 +2,7 @@
 
 import pickle
 from typing import BinaryIO, List, Dict
-from vtes.game import Game
+from vtes.game import Game, Player
 
 class Ranking:
     """Represents a ranking of a player in a game series"""
@@ -33,6 +33,18 @@ class Ranking:
 
 class GameStore:
     """Implements a journal of games"""
+    @staticmethod
+    def _include_player_in_rankings(rankings: Dict[str, Ranking],
+                                    player: Player, game: Game) -> None:
+        """Include results of `player` in `game` into `rankings`"""
+        if player.name not in rankings:
+            rankings[player.name] = Ranking(player.name, 0, 0, 0)
+        rankings[player.name].games += 1
+        if player.points is not None:
+            rankings[player.name].points += player.points
+        if player.name == game.winner:
+            rankings[player.name].wins += 1
+
     def __init__(self) -> None:
         self.games: List[Game] = []
 
@@ -55,13 +67,7 @@ class GameStore:
         rankings: Dict[str, Ranking] = {}
         for game in self.games:
             for player in game.player_results:
-                if player.name not in rankings:
-                    rankings[player.name] = Ranking(player.name, 0, 0, 0)
-                rankings[player.name].games += 1
-                if player.points is not None:
-                    rankings[player.name].points += player.points
-                if player.name == game.winner:
-                    rankings[player.name].wins += 1
+                GameStore._include_player_in_rankings(rankings, player, game)
 
         return sorted(list(rankings.values()), reverse=True)
 
