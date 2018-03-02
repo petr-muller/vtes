@@ -39,6 +39,7 @@ def test_rankings():
     assert ranking.wins == 0
     assert ranking.points == 0
     assert ranking.games == 0
+    assert ranking.gw_ratio is None
     assert str(ranking) == "player GW=0 VP=0 games=0"
     assert repr(ranking) == "player GW=0 VP=0 games=0"
 
@@ -50,6 +51,7 @@ def test_rankings():
     assert ranking.wins == 1
     assert ranking.points == 2.5
     assert ranking.games == 3
+    assert ranking.gw_ratio == 33
     assert ranking != ranking_same
     assert ranking == ranking
 
@@ -70,3 +72,15 @@ def test_store_rankings():
     assert rankings[3] == Ranking("3", 0, 1, 1)
     for loser in ("4", "5", "C", "D", "E"):
         assert Ranking(loser, 0, 0, 1) in rankings
+
+def test_gw_ratio():
+    assert Ranking("aaa", 0, 0, 0).gw_ratio is None
+    assert Ranking("aaa", 1, 4, 1).gw_ratio == 100
+    assert Ranking("aaa", 1, 4, 2).gw_ratio == 50
+    assert Ranking("aaa", 1, 4, 3).gw_ratio == 33
+    assert Ranking("aaa", 2, 4, 3).gw_ratio == 67
+
+    ranking = Ranking("aaa", 0, 0, 0)
+    ranking.games = 3
+    ranking.wins = 2
+    assert ranking.gw_ratio == 67
