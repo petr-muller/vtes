@@ -40,7 +40,7 @@ def stats_command(journal_path: pathlib.Path) -> None:
         store = load_store(journal_file)
 
     rankings = store.rankings()
-    print(tabulate(rankings, headers=('Player', 'GW', 'VP', 'Games')))
+    print(tabulate(rankings, headers=('Player', 'GW', 'VP', 'Games', "GW Ratio")))
     print("")
     print(f"Overall statistics: {len(store)} games with {len(rankings)} players")
 

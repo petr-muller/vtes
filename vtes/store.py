@@ -29,7 +29,12 @@ class Ranking:
         return f"{self.player} GW={self.wins} VP={self.points} games={self.games}"
 
     def __iter__(self):
-        yield from (self.player, self.wins, self.points, self.games)
+        yield from (self.player, self.wins, self.points, self.games, f"{self.gw_ratio}%")
+
+    @property
+    def gw_ratio(self) -> int:
+        """Return a percentage (0-100) of games the player won"""
+        return round(float(self.wins)/float(self.games)*100) if self.games else None
 
 class GameStore:
     """Implements a journal of games"""
