@@ -12,6 +12,7 @@ class Ranking:
         self.wins: int = wins
         self.points: float = points
         self.games: int = games
+        self.total_possible_vp: int = 0
 
     def __eq__(self, other):
         return (self.player == other.player and
@@ -29,18 +30,27 @@ class Ranking:
         return f"{self.player} GW={self.wins} VP={self.points} games={self.games}"
 
     def __iter__(self):
-        yield from (self.player, self.wins, self.points, self.games, f"{self.gw_ratio}%")
+        yield from (self.player, self.wins, self.points, self.games, f"{self.gw_ratio}%",
+                    f"{self.vp_ratio}%")
 
     @property
     def gw_ratio(self) -> int:
         """Return a percentage (0-100) of games the player won"""
         return round(float(self.wins)/float(self.games)*100) if self.games else None
 
+    @property
+    def vp_ratio(self) -> int:
+        """Return a percentage (0-100) of VPs the player got"""
+        if not self.total_possible_vp:
+            return None
+
+        return round(float(self.points)/float(self.total_possible_vp)*100)
+
 class GameStore:
     """Implements a journal of games"""
     @staticmethod
-    def _include_player_in_rankings(rankings: Dict[str, Ranking],
-                                    player: Player, game: Game) -> None:
+    def _include_player_in_rankings(rankings: Dict[str, Ranking], player: Player,
+                                    game: Game, player_count: int) -> None:
         """Include results of `player` in `game` into `rankings`"""
         if player.name not in rankings:
             rankings[player.name] = Ranking(player.name, 0, 0, 0)
@@ -49,6 +59,7 @@ class GameStore:
             rankings[player.name].points += player.points
         if player.name == game.winner:
             rankings[player.name].wins += 1
+        rankings[player.name].total_possible_vp += player_count
 
     def __init__(self) -> None:
         self.games: List[Game] = []
@@ -72,7 +83,8 @@ class GameStore:
         rankings: Dict[str, Ranking] = {}
         for game in self.games:
             for player in game.player_results:
-                GameStore._include_player_in_rankings(rankings, player, game)
+                GameStore._include_player_in_rankings(rankings, player, game,
+                                                      len(game.player_results))
 
         return sorted(list(rankings.values()), reverse=True)
 
