@@ -84,3 +84,9 @@ def test_gw_ratio():
     ranking.games = 3
     ranking.wins = 2
     assert ranking.gw_ratio == 67
+
+def test_vp_snatch():
+    ranking = Ranking("aaa", 2, 4, 3)
+    assert ranking.vp_ratio is None
+    ranking.total_possible_vp = 10
+    assert ranking.vp_ratio == 40
