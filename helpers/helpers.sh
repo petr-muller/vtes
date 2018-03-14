@@ -8,6 +8,7 @@ ft() {
 st() {
   cat helpers/strict-setup.cfg > setup.cfg
   python setup.py test
+  mypy vtes
 }
 
 cov() {
