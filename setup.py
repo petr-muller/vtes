@@ -21,9 +21,9 @@ setup(
     ],
     keywords="ccg vtes",
     packages=find_packages(exclude=["tests"]),
-    setup_requires=['pytest-runner', 'pytest-bdd', 'pytest-pylint', 'pytest-mypy', 'pytest-cov',
-                    'pyfakefs'],
-    tests_require=['pytest', 'pylint', 'mypy', 'blessings', 'tabulate'],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest', 'pylint', 'mypy', 'blessings', 'tabulate', 'pyfakefs',
+                   'pytest-bdd', 'pytest-pylint', 'pytest-mypy', 'pytest-cov'],
     install_requires=["blessings", "tabulate"],
     entry_points={'console_scripts': ['vtes=vtes.run:main']}
 )
