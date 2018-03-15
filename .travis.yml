@@ -5,7 +5,8 @@ python:
 cache: pip
 
 install:
-  - pip install codacy-coverage codecov python-coveralls tabulate
+  - pip install codacy-coverage codecov python-coveralls
+  - pip install -r requirements-tests.txt
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
 
