@@ -76,7 +76,7 @@ class GameStore:
 
     def save(self, storage: BinaryIO) -> None:
         """Save the journal to the bytes file-like object"""
-        pickle.dump(self, storage)
+        pickle.dump(self, storage, protocol=pickle.HIGHEST_PROTOCOL)
 
     def rankings(self) -> List[Ranking]:
         """Return a list of player rankings, sorted by GW, then VP, then games"""
