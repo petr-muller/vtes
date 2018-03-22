@@ -90,4 +90,11 @@ class GameStore:
 
 def load_store(storage: BinaryIO) -> GameStore:
     """Create a GameStore from storage"""
-    return pickle.load(storage)
+    store = pickle.load(storage)
+
+    # fill in missing attributes from possible old store
+    for game in store:
+        if not hasattr(game, "date"):
+            setattr(game, "date", None)
+
+    return store
