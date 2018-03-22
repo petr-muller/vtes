@@ -1,5 +1,6 @@
 # I do not have that high criteria for test code
 # pylint: disable=missing-docstring
+import dateutil
 from vtes.game import Game, parse_player, set_colorize
 
 def test_parse_player():
@@ -57,3 +58,8 @@ def test_colorize():
     assert str(game) == "P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5"
     set_colorize(False)
     assert str(game) == "P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5"
+
+def test_date():
+    table = ("P1:0", "P2:2", "P3:3", "P4", "P5")
+    game = Game(table, date=dateutil.parser.parse("2018-03-20"))
+    assert str(game) == "2018-03-20: P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5"

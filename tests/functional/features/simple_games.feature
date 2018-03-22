@@ -62,3 +62,10 @@ Scenario: List game with decks and victory points
     Given I logged game with decks and victory points
     When I invoke vtes games
     Then game is listed with decks and victory points
+
+Scenario: Add games with date
+    When I invoke vtes add
+    And I specify players with decks
+    And I specify game date
+    And I submit the command
+    Then command finishes successfully

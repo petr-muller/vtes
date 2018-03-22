@@ -128,3 +128,7 @@ def decks(vtes_command):
     players = " \u25b6 ".join(players)
     output = vtes_command.completed.stdout
     assert output.startswith(f"0: {players}")
+
+@when('I specify game date')
+def game_dates(vtes_command):
+    vtes_command.add_arguments(["--date", "2018-03-22"])

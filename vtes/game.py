@@ -1,6 +1,7 @@
 """Log of a single VtES game"""
 
 import re
+import datetime
 from typing import Sequence
 from blessings import Terminal
 
@@ -64,11 +65,12 @@ class Game:
 
         return player_line
 
-    def __init__(self, table: Sequence[str]) -> None:
+    def __init__(self, table: Sequence[str], date: datetime.datetime = None) -> None:
         self.table: Sequence[str] = table
         self.winning_points: float = None
         self.winner: str = None
         self.player_results: Sequence[Player] = []
+        self.date: datetime.datetime = date
 
         for item in self.table:
             player = parse_player(item)
@@ -93,5 +95,9 @@ class Game:
         players = []
         for player in self.player_results:
             players.append(Game._make_player_line(player, self.winner))
+
+        if self.date:
+            return "{date}: {results}".format(date=self.date.date().isoformat(),
+                                              results=" \u25b6 ".join(players))
 
         return " \u25b6 ".join(players)

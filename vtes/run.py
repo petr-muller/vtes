@@ -3,7 +3,10 @@
 import pathlib
 from argparse import Action, ArgumentParser
 from typing import Sequence
+
 from tabulate import tabulate
+import dateutil.parser
+
 from vtes.game import Game, set_colorize
 from vtes.store import load_store, GameStore
 
@@ -19,7 +22,7 @@ def games_command(journal_path: pathlib.Path) -> None:
         print(f"{index:{count_size}d}: {game}")
 
 
-def add_command(players: Sequence[str], journal_path: pathlib.Path) -> None:
+def add_command(players: Sequence[str], journal_path: pathlib.Path, date=None) -> None:
     """Create a new Game and add it to the store"""
     if journal_path.exists():
         with journal_path.open('rb') as journal_file:
@@ -27,7 +30,7 @@ def add_command(players: Sequence[str], journal_path: pathlib.Path) -> None:
     else:
         store = GameStore()
 
-    game = Game(players)
+    game = Game(players, date=date)
     store.add(game)
 
     with journal_path.open('wb') as journal_file:
@@ -67,6 +70,7 @@ def main(): # pragma: no cover
     subcommands = parser.add_subparsers()
 
     add = subcommands.add_parser("add")
+    add.add_argument("--date", default=None, type=dateutil.parser.parse)
     add.add_argument("players", action=ParsePlayerAction, nargs='*')
     add.set_defaults(func=add_command)
 
