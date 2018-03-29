@@ -2,7 +2,7 @@
 # pylint: disable=missing-docstring
 
 from io import BytesIO
-from vtes.store import GameStore, load_store, Ranking
+from vtes.store import GameStore, load_store, Ranking, DeckRanking
 from vtes.game import Game
 
 def test_store():
@@ -31,6 +31,21 @@ def test_store_save_load():
     games = list(new_store)
     assert str(games[0]) == "1 \u25b6 2 \u25b6 3 \u25b6 4 \u25b6 5"
     assert str(games[1]) == "A \u25b6 B \u25b6 C \u25b6 D \u25b6 E"
+
+def test_deck_rankings():
+    deck_ranking = DeckRanking("Valkyries", "Afri", 2, 3, 6, 15)
+    assert deck_ranking.player == "Afri"
+    assert deck_ranking.deck == "Valkyries"
+    assert deck_ranking.games == 3
+    assert deck_ranking.gw == 2
+    assert deck_ranking.gw_ratio == 67
+    assert deck_ranking.vp == 6
+    assert deck_ranking.vp_total == 15
+    assert deck_ranking.vp_ratio == 40
+
+    assert deck_ranking == DeckRanking("Valkyries", "Afri", 2, 3, 6, 15)
+    assert str(deck_ranking) == "Valkyries(Afri) 2/3 GW 6/15 VP"
+    assert str(deck_ranking) == repr(deck_ranking)
 
 def test_rankings():
     ranking = Ranking("player", 0, 0, 0)
@@ -73,6 +88,17 @@ def test_store_rankings():
     for loser in ("4", "5", "C", "D", "E"):
         assert Ranking(loser, 0, 0, 1) in rankings
 
+def test_store_deck_rankings():
+    store = GameStore()
+    store.add(Game(("1(A):3", "2(B):1", "3(C):1", "4(D)", "5")))
+    store.add(Game(("A(A):4", "2(B):1", "C(C)", "D", "E")))
+    rankings = store.decks()
+    assert len(rankings) == 6
+    assert rankings[0] == DeckRanking("A", "A", 1, 1, 4, 5)
+    assert rankings[1] == DeckRanking("A", "1", 1, 1, 3, 5)
+    assert rankings[2] == DeckRanking("B", "2", 0, 2, 2, 10)
+    assert rankings[3] == DeckRanking("C", "3", 0, 1, 1, 5)
+
 def test_gw_ratio():
     assert Ranking("aaa", 0, 0, 0).gw_ratio is None
     assert Ranking("aaa", 1, 4, 1).gw_ratio == 100
@@ -88,5 +114,5 @@ def test_gw_ratio():
 def test_vp_snatch():
     ranking = Ranking("aaa", 2, 4, 3)
     assert ranking.vp_ratio is None
-    ranking.total_possible_vp = 10
+    ranking.vp_total = 10
     assert ranking.vp_ratio == 40
