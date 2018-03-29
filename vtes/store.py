@@ -128,21 +128,30 @@ class GameStore:
 
         return sorted(list(rankings.values()), reverse=True)
 
+    @staticmethod
+    def _include_deck_in_rankings(rankings: Dict[Tuple[str, str], DeckRanking], deck: str,
+                                  name: str, vp: int, total_vp: int, winner: bool) -> None:
+        if not deck:
+            return
+
+        deck_id = (deck, name)
+        if deck_id not in rankings:
+            rankings[deck_id] = DeckRanking(deck, name, 0, 0, 0, 0)
+        rankings[deck_id].games += 1
+        rankings[deck_id].vp_total += total_vp
+        if vp:
+            rankings[deck_id].vp += vp
+        if winner:
+            rankings[deck_id].gw += 1
+
     def decks(self) -> List[DeckRanking]:
         """Return a list of deck rankings, sorted by GW, then VP, then games"""
         decks: Dict[Tuple[str, str], DeckRanking] = {}
         for game in self.games:
             for player in game.player_results:
-                if player.deck:
-                    deck_id = (player.deck, player.name)
-                    if deck_id not in decks:
-                        decks[deck_id] = DeckRanking(player.deck, player.name, 0, 0, 0, 0)
-                    decks[deck_id].games += 1
-                    decks[deck_id].vp_total += len(game.player_results)
-                    if player.points:
-                        decks[deck_id].vp += player.points
-                    if player.name == game.winner:
-                        decks[deck_id].gw += 1
+                GameStore._include_deck_in_rankings(decks, player.deck, player.name, player.points,
+                                                    len(game.player_results),
+                                                    player.name == game.winner)
 
         return sorted(list(decks.values()), reverse=True)
 
