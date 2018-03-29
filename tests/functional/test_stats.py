@@ -2,23 +2,9 @@
 # redefined-outer-name: fixtures unfortunately trigger this
 # pylint: disable=missing-docstring, redefined-outer-name
 
-from pytest_bdd import given, when, then, scenarios
-from tests.fixtures.commands import vtes_command
+from pytest_bdd import when, then, scenarios
 
 scenarios('features/stats.feature')
-
-@given('I logged some games')
-def log_some_games(tmpdir):
-    games = (("Zerato:0", "preston:1", "Afri:0", "XZealot:0", "bluedevil:4"),
-             ("Felipe:0", "Afri:0", "XZealot:2", "Cooper:2"),
-             ("bluedevil:0", "XZealot:1", "Narpas:3", "gNat:0", "Afri:1"),
-             ("Afri:3", "Nebojsa:2", "ShaneS_A tier:0", "Blooded:0", "Cooper:0"),
-             ("Afri:2", "sor_garcya:3", "Cooper", "ShaneS_A tier:0", "Nebojsa:0"))
-    for game in games:
-        command = vtes_command(tmpdir)
-        command.add_arguments(("add",) + game)
-        command.execute()
-        assert command.completed.returncode == 0
 
 @when('I invoke vtes stats')
 def vtes_stats(vtes_command):

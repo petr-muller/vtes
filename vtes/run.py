@@ -47,6 +47,13 @@ def stats_command(journal_path: pathlib.Path) -> None:
     print("")
     print(f"Overall statistics: {len(store)} games with {len(rankings)} players")
 
+def decks_command(journal_path: pathlib.Path) -> None:
+    """Prints statistics about decks involved in games in store"""
+    with journal_path.open('rb') as journal_file:
+        store = load_store(journal_file)
+
+    deck_rankings = store.decks()
+    print(tabulate(deck_rankings, headers=('Deck', 'Player', 'GW', 'VP')))
 
 class ParsePlayerAction(Action):
     """This custom argparse Action parses a list of players"""
@@ -76,6 +83,9 @@ def main(): # pragma: no cover
 
     games = subcommands.add_parser("games")
     games.set_defaults(func=games_command)
+
+    decks = subcommands.add_parser("decks")
+    decks.set_defaults(func=decks_command)
 
     stats = subcommands.add_parser("stats")
     stats.set_defaults(func=stats_command)

@@ -1,7 +1,7 @@
 """Implements a journal of games"""
 
 import pickle
-from typing import BinaryIO, List, Dict
+from typing import BinaryIO, List, Dict, Tuple
 from vtes.game import Game, Player
 
 class Ranking:
@@ -12,7 +12,7 @@ class Ranking:
         self.wins: int = wins
         self.points: float = points
         self.games: int = games
-        self.total_possible_vp: int = 0
+        self.vp_total: int = 0
 
     def __eq__(self, other):
         return (self.player == other.player and
@@ -41,10 +41,50 @@ class Ranking:
     @property
     def vp_ratio(self) -> int:
         """Return a percentage (0-100) of VPs the player got"""
-        if not self.total_possible_vp:
+        if not self.vp_total:
             return None
 
-        return round(float(self.points)/float(self.total_possible_vp)*100)
+        return round(float(self.points)/float(self.vp_total)*100)
+
+class DeckRanking:
+    """Represents a ranking of a deck in a game series"""
+    def __init__(self, deck: str, player: str, gw: int, games: int, vp: int,
+                 vp_total: int) -> None:
+        self.deck: str = deck
+        self.player: str = player
+        self.gw: int = gw
+        self.games: int = games
+        self.vp: int = vp
+        self.vp_total: int = vp_total
+
+    @property
+    def gw_ratio(self) -> int:
+        """Return a percentage (0-100) of GWs the deck won"""
+        return round(float(self.gw)/float(self.games)*100)
+
+    @property
+    def vp_ratio(self) -> int:
+        """Return a percentage (0-100) of VPs the deck won"""
+        return round(float(self.vp)/float(self.vp_total)*100)
+
+    def __lt__(self, other):
+        return ((self.gw_ratio, self.vp_ratio, self.deck, self.player) <
+                (other.gw_ratio, other.vp_ratio, self.deck, self.player))
+
+    def __eq__(self, other):
+        return ((self.deck, self.player, self.gw, self.games, self.vp, self.vp_total) ==
+                (other.deck, other.player, other.gw, other.games, other.vp, other.vp_total))
+
+    def __str__(self):
+        return f"{self.deck}({self.player}) {self.gw}/{self.games} GW {self.vp}/{self.vp_total} VP"
+
+    def __repr__(self):
+        return str(self)
+
+    def __iter__(self):
+        yield from (self.deck, self.player, f"{self.gw}/{self.games} ({self.gw_ratio}%)",
+                    f"{self.vp}/{self.vp_total} ({self.vp_ratio}%)")
+
 
 class GameStore:
     """Implements a journal of games"""
@@ -59,7 +99,7 @@ class GameStore:
             rankings[player.name].points += player.points
         if player.name == game.winner:
             rankings[player.name].wins += 1
-        rankings[player.name].total_possible_vp += player_count
+        rankings[player.name].vp_total += player_count
 
     def __init__(self) -> None:
         self.games: List[Game] = []
@@ -87,6 +127,24 @@ class GameStore:
                                                       len(game.player_results))
 
         return sorted(list(rankings.values()), reverse=True)
+
+    def decks(self) -> List[DeckRanking]:
+        """Return a list of deck rankings, sorted by GW, then VP, then games"""
+        decks: Dict[Tuple[str, str], DeckRanking] = {}
+        for game in self.games:
+            for player in game.player_results:
+                if player.deck:
+                    deck_id = (player.deck, player.name)
+                    if deck_id not in decks:
+                        decks[deck_id] = DeckRanking(player.deck, player.name, 0, 0, 0, 0)
+                    decks[deck_id].games += 1
+                    decks[deck_id].vp_total += len(game.player_results)
+                    if player.points:
+                        decks[deck_id].vp += player.points
+                    if player.name == game.winner:
+                        decks[deck_id].gw += 1
+
+        return sorted(list(decks.values()), reverse=True)
 
 def load_store(storage: BinaryIO) -> GameStore:
     """Create a GameStore from storage"""
