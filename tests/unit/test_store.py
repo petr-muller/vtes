@@ -92,12 +92,16 @@ def test_store_deck_rankings():
     store = GameStore()
     store.add(Game(("1(A):3", "2(B):1", "3(C):1", "4(D)", "5")))
     store.add(Game(("A(A):4", "2(B):1", "C(C)", "D", "E")))
-    rankings = store.decks()
+    rankings = store.decks(player=None)
     assert len(rankings) == 6
     assert rankings[0] == DeckRanking("A", "A", 1, 1, 4, 5)
     assert rankings[1] == DeckRanking("A", "1", 1, 1, 3, 5)
     assert rankings[2] == DeckRanking("B", "2", 0, 2, 2, 10)
     assert rankings[3] == DeckRanking("C", "3", 0, 1, 1, 5)
+
+    player_rankings = store.decks(player="2")
+    assert len(player_rankings) == 1
+    assert player_rankings[0] == DeckRanking("B", "2", 0, 2, 2, 10)
 
 def test_gw_ratio():
     assert Ranking("aaa", 0, 0, 0).gw_ratio is None

@@ -144,14 +144,16 @@ class GameStore:
         if winner:
             rankings[deck_id].gw += 1
 
-    def decks(self) -> List[DeckRanking]:
+    def decks(self, player: str) -> List[DeckRanking]:
         """Return a list of deck rankings, sorted by GW, then VP, then games"""
         decks: Dict[Tuple[str, str], DeckRanking] = {}
         for game in self.games:
-            for player in game.player_results:
-                GameStore._include_deck_in_rankings(decks, player.deck, player.name, player.points,
-                                                    len(game.player_results),
-                                                    player.name == game.winner)
+            for game_player in game.player_results:
+                if player is None or player == game_player.name:
+                    GameStore._include_deck_in_rankings(decks, game_player.deck, game_player.name,
+                                                        game_player.points,
+                                                        len(game.player_results),
+                                                        game_player.name == game.winner)
 
         return sorted(list(decks.values()), reverse=True)
 
