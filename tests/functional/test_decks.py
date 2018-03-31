@@ -18,3 +18,15 @@ def listed_deck_rankings(vtes_command):
     assert output[2].startswith("Deck    Narpas         1/1 (100%)  3/5 (60%)")
     assert output[3].startswith("Deck    sor_garcya     1/1 (100%)  3/5 (60%)")
     assert output[4].startswith("Deck 2  Afri           1/2 (50%)   5/10 (50%)")
+
+@when("I specify a single player")
+def single_player_decks(vtes_command):
+    vtes_command.add_arguments(("Afri",))
+
+@then('deck statistics are listed for a single player')
+def single_player_deck_rankings(vtes_command):
+    output = vtes_command.completed.stdout.split("\n")
+    assert output[0].startswith("Deck    Player    GW         VP")
+    assert output[1].startswith("------  --------  ---------  ----------")
+    assert output[2].startswith("Deck 2  Afri      1/2 (50%)  5/10 (50%)")
+    assert output[3].startswith("Deck    Afri      0/3 (0%)   1/14 (7%)")
