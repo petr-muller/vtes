@@ -36,6 +36,21 @@ def add_command(players: Sequence[str], journal_path: pathlib.Path, date=None) -
     with journal_path.open('wb') as journal_file:
         store.save(journal_file)
 
+def gamefix_command(game_index: int, players: Sequence[str], journal_path: pathlib.Path,
+                    date=None):
+    """Change the properties of an existing game"""
+    with journal_path.open('rb') as journal_file:
+        store = load_store(journal_file)
+
+    if date:
+        game = Game(players, date)
+    else:
+        game = Game(players, list(store)[game_index].date)
+
+    store.fix(game_index, game)
+
+    with journal_path.open('wb') as journal_file:
+        store.save(journal_file)
 
 def stats_command(journal_path: pathlib.Path) -> None:
     """Output various statistics"""
@@ -83,6 +98,12 @@ def main(): # pragma: no cover
 
     games = subcommands.add_parser("games")
     games.set_defaults(func=games_command)
+
+    gamefix = subcommands.add_parser("game-fix")
+    gamefix.add_argument("game_index", type=int)
+    gamefix.add_argument("--date", default=None, type=dateutil.parser.parse)
+    gamefix.add_argument("players", action=ParsePlayerAction, nargs='*')
+    gamefix.set_defaults(func=gamefix_command)
 
     decks = subcommands.add_parser("decks")
     decks.add_argument("player", nargs='?', default=None)

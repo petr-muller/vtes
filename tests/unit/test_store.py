@@ -32,6 +32,15 @@ def test_store_save_load():
     assert str(games[0]) == "1 \u25b6 2 \u25b6 3 \u25b6 4 \u25b6 5"
     assert str(games[1]) == "A \u25b6 B \u25b6 C \u25b6 D \u25b6 E"
 
+def test_fix():
+    store = GameStore()
+    store.add(Game(("1", "2", "3", "4", "5")))
+    store.fix(0, Game(("A", "B", "C", "D", "E")))
+
+    assert len(store) == 1
+    games = list(store)
+    assert str(games[0]) == "A \u25b6 B \u25b6 C \u25b6 D \u25b6 E"
+
 def test_deck_rankings():
     deck_ranking = DeckRanking("Valkyries", "Afri", 2, 3, 6, 15)
     assert deck_ranking.player == "Afri"

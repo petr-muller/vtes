@@ -114,6 +114,10 @@ class GameStore:
         """Add a Game to the journal"""
         self.games.append(game)
 
+    def fix(self, index: int, game: Game) -> None:
+        """Fix a Game already in the journal"""
+        self.games[index] = game
+
     def save(self, storage: BinaryIO) -> None:
         """Save the journal to the bytes file-like object"""
         pickle.dump(self, storage, protocol=pickle.HIGHEST_PROTOCOL)
