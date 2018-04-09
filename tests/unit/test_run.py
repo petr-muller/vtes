@@ -5,8 +5,9 @@ from unittest.mock import Mock, MagicMock, patch
 from io import BytesIO
 import pathlib
 import pytest
+import dateutil.parser
 
-from vtes.run import ParsePlayerAction, games_command, add_command, stats_command
+from vtes.run import ParsePlayerAction, games_command, add_command, stats_command, gamefix_command
 from vtes.store import GameStore, load_store
 
 from vtes.game import Game
@@ -76,3 +77,34 @@ def test_add_command_when_not_exists(fs):
         new_store = load_store(fakefile)
 
     assert len(new_store) == 2
+
+def test_gamefix_command(fs):
+    # pylint: disable=invalid-name, unused-argument
+    fake_path = pathlib.Path("file")
+    add_command(("1", "2", "3", "4", "5"), fake_path)
+    gamefix_command(0, ("A", "B", "C", "D", "E"), fake_path)
+
+    with fake_path.open("rb") as fakefile:
+        new_store = load_store(fakefile)
+
+    assert len(new_store) == 1
+    assert new_store.games[0].table == ("A", "B", "C", "D", "E")
+
+def test_gamefix_command_date(fs):
+    # pylint: disable=invalid-name, unused-argument
+    fake_path = pathlib.Path("file")
+    add_command(("1", "2", "3", "4", "5"), fake_path,
+                date=dateutil.parser.parse("2018-04-09"))
+    add_command(("11", "22", "33", "44", "5"), fake_path)
+    gamefix_command(0, ("A", "B", "C", "D", "E"), fake_path)
+    gamefix_command(1, ("AA", "BB", "CC", "DD", "EE"), fake_path,
+                    date=dateutil.parser.parse("2018-04-09"))
+
+    with fake_path.open("rb") as fakefile:
+        new_store = load_store(fakefile)
+
+    assert len(new_store) == 2
+    assert new_store.games[0].table == ("A", "B", "C", "D", "E")
+    assert new_store.games[0].date == dateutil.parser.parse("2018-04-09")
+    assert new_store.games[1].table == ("AA", "BB", "CC", "DD", "EE")
+    assert new_store.games[1].date == dateutil.parser.parse("2018-04-09")
