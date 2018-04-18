@@ -23,8 +23,7 @@ setup(
     packages=find_packages(exclude=["tests"]),
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pylint', 'mypy', 'blessings', 'tabulate', 'pyfakefs',
-                   'pytest-bdd', 'pytest-pylint', 'pytest-mypy', 'pytest-cov',
-                   'python-dateutil'],
+                   'pytest-bdd', 'pytest-pylint', 'pytest-cov', 'python-dateutil'],
     install_requires=["blessings", "tabulate", 'python-dateutil'],
     entry_points={'console_scripts': ['vtes=vtes.run:main']}
 )

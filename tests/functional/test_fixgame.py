@@ -8,21 +8,14 @@ from tests.fixtures.commands import vtes_command
 
 scenarios('features/gamefix.feature')
 
-@when('I invoke vtes game-fix')
-def vtes_game_fix(vtes_command):
-    vtes_command.add_arguments(("game-fix",))
-
 @when('I change game 1')
 def change_game_1(vtes_command):
-    vtes_command.add_arguments(("1",))
-    vtes_command.add_arguments(("Felipe(dECK):0", "aFRI(Deck):0", "XZealot(Deck):3",
-                                "Cooper(Deck):1"))
+    vtes_command.gamefix().with_arguments(("1", "Felipe(dECK):0", "aFRI(Deck):0", "XZealot(Deck):3",
+                                           "Cooper(Deck):1"))
 
 @then('game is changed')
 def game_is_changed(tmpdir):
-    command = vtes_command(tmpdir)
-    command.add_arguments(("games",))
-    command.execute()
+    command = vtes_command(tmpdir).games().execute()
 
     output = [line for line in command.completed.stdout.split("\n") if line]
     assert output[1] == "1: Felipe (dECK) \u25b6 aFRI (Deck) \u25b6 XZealot (Deck) 3VP GW \u25b6 Cooper (Deck) 1VP" # pylint: disable=line-too-long

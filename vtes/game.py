@@ -2,7 +2,7 @@
 
 import re
 import datetime
-from typing import Sequence
+from typing import Sequence, List
 from blessings import Terminal
 
 TERM = Terminal()
@@ -65,26 +65,35 @@ class Game:
 
         return player_line
 
-    def __init__(self, table: Sequence[str], date: datetime.datetime = None) -> None:
-        self.table: Sequence[str] = table
-        self.winning_points: float = None
-        self.winner: str = None
-        self.player_results: Sequence[Player] = []
-        self.date: datetime.datetime = date
+    @staticmethod
+    def from_table(table: Sequence[str], date: datetime.datetime = None) -> 'Game':
+        """Parse a table result definition and return a Game instance from it"""
+        results: List[Player] = []
+        winning_points: float = None
+        winner: str = None
 
-        for item in self.table:
+        for item in table:
             player = parse_player(item)
-            self.player_results.append(player)
+            results.append(player)
 
             points = player.points or 0
-            winning_points = self.winning_points or 1
+            current_winning_points = winning_points or 1
 
-            if points > winning_points:
-                self.winning_points = points
-                self.winner = player.name
+            if points > current_winning_points:
+                winning_points = points
+                winner = player.name
             elif points == winning_points:
-                self.winning_points = None
-                self.winner = None
+                winning_points = None
+                winner = None
+
+        return Game(results, winner, winning_points, date)
+
+    def __init__(self, results: Sequence[Player], winner: str, winning_points: float,
+                 date: datetime.datetime) -> None:
+        self.winning_points: float = winning_points
+        self.winner: str = winner
+        self.player_results: Sequence[Player] = results
+        self.date: datetime.datetime = date
 
     @property
     def players(self) -> Sequence[str]:

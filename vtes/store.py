@@ -1,8 +1,10 @@
 """Implements a journal of games"""
 
 import pickle
-from typing import BinaryIO, List, Dict, Tuple
+import pathlib
+from typing import Sequence, List, Dict, Tuple
 from vtes.game import Game, Player
+from vtes.db import DATABASE, DatabaseGameModel, DatabasePlayerModel
 
 class Ranking:
     """Represents a ranking of a player in a game series"""
@@ -118,10 +120,6 @@ class GameStore:
         """Fix a Game already in the journal"""
         self.games[index] = game
 
-    def save(self, storage: BinaryIO) -> None:
-        """Save the journal to the bytes file-like object"""
-        pickle.dump(self, storage, protocol=pickle.HIGHEST_PROTOCOL)
-
     def rankings(self) -> List[Ranking]:
         """Return a list of player rankings, sorted by GW, then VP, then games"""
         rankings: Dict[str, Ranking] = {}
@@ -161,13 +159,94 @@ class GameStore:
 
         return sorted(list(decks.values()), reverse=True)
 
-def load_store(storage: BinaryIO) -> GameStore:
-    """Create a GameStore from storage"""
-    store = pickle.load(storage)
 
-    # fill in missing attributes from possible old store
-    for game in store:
-        if not hasattr(game, "date"):
-            setattr(game, "date", None)
+class PickleStore():
+    """VtES Game Store backed by a pickle file"""
+    def __init__(self, path: str) -> None:
+        self.journal_path: pathlib.Path = pathlib.Path(path)
+        self.store: GameStore = GameStore()
 
-    return store
+    def open(self) -> None:
+        """Load the store from a pickle file"""
+        with self.journal_path.open('rb') as journal_file:
+            self.store = pickle.load(journal_file)
+
+        # fill in missing attributes from possible old store
+        for game in self.store:
+            if not hasattr(game, "date"):
+                setattr(game, "date", None)
+
+    def save(self) -> None:
+        """Save the store to a pickle file"""
+        with self.journal_path.open('wb') as journal_file:
+            pickle.dump(self.store, journal_file, pickle.HIGHEST_PROTOCOL)
+
+    def add(self, game: Game) -> None:
+        """Add a Game to the journal"""
+        self.store.add(game)
+
+    def fix(self, index: int, game: Game) -> None:
+        """Fix a Game already in the journal"""
+        self.store.fix(index, game)
+
+    def rankings(self) -> Sequence[Ranking]:
+        """Return a list of player rankings, sorted by GW, then VP, then games"""
+        return self.store.rankings()
+
+    def decks(self, player: str) -> Sequence[DeckRanking]:
+        """Return a list of deck rankings, sorted by GW, then VP, then games"""
+        return self.store.decks(player)
+
+    @property
+    def games(self) -> Sequence[Game]:
+        """Return a sequence of games present in the store"""
+        return self.store.games
+
+    def __len__(self) -> int:
+        return len(self.store)
+
+    def __iter__(self) -> Game:
+        yield from self.store
+
+class DatabaseStore():
+    """VtES Game Store backed by a database"""
+    def __init__(self, path: str) -> None:
+        self.journal_path: pathlib.Path = pathlib.Path(path)
+
+    def open(self) -> None:
+        """Connect to a database and ensure all tables exist"""
+        DATABASE.init(str(self.journal_path))
+        DATABASE.connect()
+        DATABASE.create_tables([DatabaseGameModel, DatabasePlayerModel])
+
+    @staticmethod
+    def add(game: Game) -> None:
+        """Add a Game to the journal"""
+        DatabaseGameModel.db_create(game)
+
+    @staticmethod
+    def save() -> None:
+        """This is a NOP with database backend"""
+        pass
+
+    @staticmethod
+    def rankings() -> Sequence[Ranking]:
+        """Return a list of player rankings, sorter by GW, then VP, then games"""
+        store = GameStore()
+        store.games = DatabaseGameModel.all_games()
+        return store.rankings()
+
+    @staticmethod
+    def decks(player: str) -> Sequence[DeckRanking]:
+        """Return a list of deck rankings, sorted by GW, then VP, then games"""
+        store = GameStore()
+        store.games = DatabaseGameModel.all_games()
+        return store.decks(player)
+
+    def __len__(self) -> int:
+        # Passing 'None' to avoid Pylint errors, WONTFIX in peewee
+        # https://github.com/coleifer/peewee/issues/1466
+        return DatabaseGameModel.select().count(None)
+
+    def __iter__(self):
+        yield from DatabaseGameModel.all_games()

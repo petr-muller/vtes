@@ -1,41 +1,25 @@
 # I do not have that high criteria for test code
 # pylint: disable=missing-docstring
 
-from io import BytesIO
-from vtes.store import GameStore, load_store, Ranking, DeckRanking
+from vtes.store import GameStore, Ranking, DeckRanking, PickleStore
 from vtes.game import Game
 
 def test_store():
     store = GameStore()
     assert len(store) == 0  # pylint: disable=len-as-condition
-    store.add(Game(("1", "2", "3", "4", "5")))
+    store.add(Game.from_table(("1", "2", "3", "4", "5")))
     assert len(store) == 1
-    store.add(Game(("A", "B", "C", "D", "E")))
+    store.add(Game.from_table(("A", "B", "C", "D", "E")))
     assert len(store) == 2
 
     games = list(store)
     assert str(games[0]) == "1 \u25b6 2 \u25b6 3 \u25b6 4 \u25b6 5"
     assert str(games[1]) == "A \u25b6 B \u25b6 C \u25b6 D \u25b6 E"
 
-def test_store_save_load():
-    store = GameStore()
-    store.add(Game(("1", "2", "3", "4", "5")))
-    store.add(Game(("A", "B", "C", "D", "E")))
-
-    with BytesIO() as fakefile:
-        store.save(fakefile)
-        fakefile.seek(0, 0)
-        new_store = load_store(fakefile)
-
-    assert len(new_store) == 2
-    games = list(new_store)
-    assert str(games[0]) == "1 \u25b6 2 \u25b6 3 \u25b6 4 \u25b6 5"
-    assert str(games[1]) == "A \u25b6 B \u25b6 C \u25b6 D \u25b6 E"
-
 def test_fix():
     store = GameStore()
-    store.add(Game(("1", "2", "3", "4", "5")))
-    store.fix(0, Game(("A", "B", "C", "D", "E")))
+    store.add(Game.from_table(("1", "2", "3", "4", "5")))
+    store.fix(0, Game.from_table(("A", "B", "C", "D", "E")))
 
     assert len(store) == 1
     games = list(store)
@@ -86,8 +70,8 @@ def test_rankings_comparison():
 
 def test_store_rankings():
     store = GameStore()
-    store.add(Game(("1:3", "2:1", "3:1", "4", "5")))
-    store.add(Game(("A:4", "2:1", "C", "D", "E")))
+    store.add(Game.from_table(("1:3", "2:1", "3:1", "4", "5")))
+    store.add(Game.from_table(("A:4", "2:1", "C", "D", "E")))
     rankings = store.rankings()
     assert len(rankings) == 9
     assert rankings[0] == Ranking("A", 1, 4, 1)
@@ -99,8 +83,8 @@ def test_store_rankings():
 
 def test_store_deck_rankings():
     store = GameStore()
-    store.add(Game(("1(A):3", "2(B):1", "3(C):1", "4(D)", "5")))
-    store.add(Game(("A(A):4", "2(B):1", "C(C)", "D", "E")))
+    store.add(Game.from_table(("1(A):3", "2(B):1", "3(C):1", "4(D)", "5")))
+    store.add(Game.from_table(("A(A):4", "2(B):1", "C(C)", "D", "E")))
     rankings = store.decks(player=None)
     assert len(rankings) == 6
     assert rankings[0] == DeckRanking("A", "A", 1, 1, 4, 5)
@@ -129,3 +113,17 @@ def test_vp_snatch():
     assert ranking.vp_ratio is None
     ranking.vp_total = 10
     assert ranking.vp_ratio == 40
+
+def test_picklestore_save_load(fs): # pylint: disable=unused-argument, invalid-name
+    store = PickleStore("file")
+    store.add(Game.from_table(("1", "2", "3", "4", "5")))
+    store.add(Game.from_table(("A", "B", "C", "D", "E")))
+    store.save()
+
+    new_store = PickleStore("file")
+    new_store.open()
+
+    assert len(new_store) == 2
+    games = list(new_store)
+    assert str(games[0]) == "1 \u25b6 2 \u25b6 3 \u25b6 4 \u25b6 5"
+    assert str(games[1]) == "A \u25b6 B \u25b6 C \u25b6 D \u25b6 E"
