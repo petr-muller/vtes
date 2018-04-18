@@ -14,7 +14,7 @@ Scenario: Game Win Ratio
     Then command finishes successfully
     And stats contain game win ratio for each player
 
-Scenario: VP Snatch Ratio Given I logged some games
+Scenario: VP Snatch Ratio Given
     Given I logged some games
     When I invoke vtes stats
     And I submit the command

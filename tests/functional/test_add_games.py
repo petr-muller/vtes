@@ -12,18 +12,18 @@ scenarios('features/simple_games.feature')
 
 @when('I invoke vtes add')
 def vtes_add(vtes_command):
-    vtes_command.add_arguments(('add',))
+    vtes_command.add()
 
 @when("I specify <count> players")
 def x_players(count, vtes_command):
-    vtes_command.add_arguments([f"player_{x}" for x in range(int(count))])
+    vtes_command.with_arguments([f"player_{x}" for x in range(int(count))])
 
 @when("I specify players with victory points")
 def x_players_with_vps(vtes_command):
     count = 5
     points = [0] * count
     points[randrange(count)] = count
-    vtes_command.add_arguments([f"player_{x}:{points[x]}" for x in range(int(count))])
+    vtes_command.with_arguments([f"player_{x}:{points[x]}" for x in range(int(count))])
 
 DECKS_5 = ("Pascek Bruise & Vote", "Synesios Summon History", "Malgorzata", "BH Assamite Rush",
            "Anarchy in the Wild West")
@@ -33,16 +33,7 @@ PLAYERS_5 = ("Zerato", "Vladish", "preston", "XZealot", "Afri")
 def x_players_with_decks_and_vps(vtes_command):
     points = (2, 0, 0, 1, 2)
     arguments = [f"{player}({deck}):{vp}" for player, deck, vp in zip(PLAYERS_5, DECKS_5, points)]
-    vtes_command.add_arguments(["add"] + arguments)
-
-@when("I specify players with decks")
-def x_players_with_decks(vtes_command):
-    arguments = [f"{player}({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
-    vtes_command.add_arguments(["add"] + arguments)
-
-@then('command finishes unsuccessfully')
-def check_command_failed(vtes_command):
-    assert vtes_command.completed.returncode != 0
+    vtes_command.add().with_arguments(arguments)
 
 @then('command emits helpful error message about player count')
 def check_error_for_player_count(vtes_command):
@@ -50,8 +41,7 @@ def check_error_for_player_count(vtes_command):
 
 @given('I logged five games')
 def log_five_games(tmpdir):
-    command = vtes_command(tmpdir)
-    command.add_arguments(("add", "one", "two", "three", "four", "five"))
+    command = vtes_command(tmpdir).add().with_arguments(("one", "two", "three", "four", "five"))
     for _ in range(5):
         command.execute()
         assert command.completed.returncode == 0
@@ -61,32 +51,25 @@ def log_game_with_vp(tmpdir, count, winning):
     count = int(count)
     winning = int(winning)
 
-    command = vtes_command(tmpdir)
     points = [0] * count
     points[winning] = count
     players = [f"player_{x}:{points[x]}" for x in range(count)]
-    command.add_arguments(["add"] + players)
-    command.execute()
+    vtes_command(tmpdir).add().with_arguments(players).execute()
 
 @given('I logged game with decks and victory points')
 def log_game_with_decks_and_vp(tmpdir):
-    command = vtes_command(tmpdir)
     points = (2, 0, 0, 1, 2)
     arguments = [f"{player}({deck}):{vp}" for player, deck, vp in zip(PLAYERS_5, DECKS_5, points)]
-    command.add_arguments(["add"] + arguments)
-    command.execute()
+    vtes_command(tmpdir).add().with_arguments(arguments).execute()
 
 @given('I logged game with decks')
 def log_game_with_decks(tmpdir):
-    command = vtes_command(tmpdir)
     arguments = [f"{player}({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
-    command.add_arguments(["add"] + arguments)
-    command.execute()
+    vtes_command(tmpdir).add().with_arguments(arguments).execute()
 
 @when('I invoke vtes games')
 def vtes_games(vtes_command):
-    vtes_command.add_arguments(["games"])
-    vtes_command.execute()
+    vtes_command.games().execute()
 
 @then('five games are listed')
 def five_games_listed(vtes_command):
@@ -131,4 +114,4 @@ def decks(vtes_command):
 
 @when('I specify game date')
 def game_dates(vtes_command):
-    vtes_command.add_arguments(["--date", "2018-03-22"])
+    vtes_command.with_arguments(("--date", "2018-03-22"))

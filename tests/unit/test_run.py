@@ -1,22 +1,20 @@
 # I do not have that high criteria for test code
 # pylint: disable=missing-docstring, redefined-outer-name
 
-from unittest.mock import Mock, MagicMock, patch
-from io import BytesIO
-import pathlib
+from unittest.mock import Mock, patch
 import pytest
 import dateutil.parser
 
 from vtes.run import ParsePlayerAction, games_command, add_command, stats_command, gamefix_command
-from vtes.store import GameStore, load_store
+from vtes.store import PickleStore
 
 from vtes.game import Game
 
 @pytest.fixture
-def store_with_two_games():
-    store = GameStore()
-    store.add(Game(("1:3", "2:2", "3", "4", "5")))
-    store.add(Game(("A:2", "B:1", "C:1", "D:1", "E")))
+def store_with_two_games(fs): # pylint: disable=invalid-name, unused-argument
+    store = PickleStore("file")
+    store.add(Game.from_table(("1:3", "2:2", "3", "4", "5")))
+    store.add(Game.from_table(("A:2", "B:1", "C:1", "D:1", "E")))
     return store
 
 def test_parse_players():
@@ -32,79 +30,69 @@ def test_parse_players():
 
 @patch('builtins.print')
 def test_games_command(mock_print, store_with_two_games):
-    with BytesIO() as fakefile:
-        store_with_two_games.save(fakefile)
-        fakefile.seek(0, 0)
-        mock_path = MagicMock(pathlib.Path)
-        mock_path.open.return_value = fakefile
-        games_command(mock_path)
+    store_with_two_games.save()
 
+    games_command(store_with_two_games)
     assert mock_print.call_count == 2
 
 @patch('builtins.print')
 def test_stats_command(mock_print, store_with_two_games):
-    with BytesIO() as fakefile:
-        store_with_two_games.save(fakefile)
-        fakefile.seek(0, 0)
-        mock_path = MagicMock(pathlib.Path)
-        mock_path.open.return_value = fakefile
-        stats_command(mock_path)
+    store_with_two_games.save()
 
+    stats_command(store_with_two_games)
     assert mock_print.call_count == 3
 
 def test_add_command_when_exists(store_with_two_games, fs):
     # pylint: disable=invalid-name, unused-argument
-    fake_path = pathlib.Path("file")
-    with fake_path.open("wb") as fakefile:
-        store_with_two_games.save(fakefile)
+    store_with_two_games.save()
 
-    add_command(("1", "2", "3", "4", "5"), fake_path)
-    add_command(("2", "3", "4", "5", "6"), fake_path)
+    add_command(("1", "2", "3", "4", "5"), store_with_two_games)
+    add_command(("2", "3", "4", "5", "6"), store_with_two_games)
 
-    with fake_path.open("rb") as fakefile:
-        new_store = load_store(fakefile)
+    new_store = PickleStore("file")
+    new_store.open()
 
     assert len(new_store) == 4
 
 def test_add_command_when_not_exists(fs):
     # pylint: disable=invalid-name, unused-argument
-    fake_path = pathlib.Path("file")
+    fake_journal = PickleStore("file")
 
-    add_command(("1", "2", "3", "4", "5"), fake_path)
-    add_command(("2", "3", "4", "5", "6"), fake_path)
+    add_command(("1", "2", "3", "4", "5"), fake_journal)
+    add_command(("2", "3", "4", "5", "6"), fake_journal)
 
-    with fake_path.open("rb") as fakefile:
-        new_store = load_store(fakefile)
+    new_fake_journal = PickleStore("file")
+    new_fake_journal.open()
 
-    assert len(new_store) == 2
+    assert len(new_fake_journal) == 2
 
 def test_gamefix_command(fs):
     # pylint: disable=invalid-name, unused-argument
-    fake_path = pathlib.Path("file")
-    add_command(("1", "2", "3", "4", "5"), fake_path)
-    gamefix_command(0, ("A", "B", "C", "D", "E"), fake_path)
+    fake_journal = PickleStore("file")
+    add_command(("1", "2", "3", "4", "5"), fake_journal)
+    gamefix_command(0, ("A", "B", "C", "D", "E"), fake_journal)
 
-    with fake_path.open("rb") as fakefile:
-        new_store = load_store(fakefile)
+    new_fake_journal = PickleStore("file")
+    new_fake_journal.open()
 
-    assert len(new_store) == 1
-    assert new_store.games[0].table == ("A", "B", "C", "D", "E")
+    assert len(new_fake_journal) == 1
+    assert new_fake_journal.games[0].players == ["A", "B", "C", "D", "E"]
 
 def test_gamefix_command_date(fs):
     # pylint: disable=invalid-name, unused-argument
-    fake_path = pathlib.Path("file")
-    add_command(("1", "2", "3", "4", "5"), fake_path,
-                date=dateutil.parser.parse("2018-04-09"))
-    add_command(("11", "22", "33", "44", "5"), fake_path)
-    gamefix_command(0, ("A", "B", "C", "D", "E"), fake_path)
-    gamefix_command(1, ("AA", "BB", "CC", "DD", "EE"), fake_path,
-                    date=dateutil.parser.parse("2018-04-09"))
+    fake_journal = PickleStore("file")
+    date20180409 = dateutil.parser.parse("2018-04-09")
 
-    with fake_path.open("rb") as fakefile:
-        new_store = load_store(fakefile)
+    add_command(("1", "2", "3", "4", "5"), fake_journal, date=date20180409)
+    add_command(("11", "22", "33", "44", "5"), fake_journal)
+    gamefix_command(0, ("A", "B", "C", "D", "E"), fake_journal)
+    gamefix_command(1, ("AA", "BB", "CC", "DD", "EE"), fake_journal, date=date20180409)
 
-    assert len(new_store) == 2
-    assert new_store.games[0].table == ("A", "B", "C", "D", "E")
-    assert new_store.games[0].date == dateutil.parser.parse("2018-04-09")
-    assert new_store.games[1].table == ("AA", "BB", "CC", "DD", "EE")
-    assert new_store.games[1].date == dateutil.parser.parse("2018-04-09")
+    new_fake_journal = PickleStore("file")
+    new_fake_journal.open()
+
+    assert len(new_fake_journal) == 2
+    assert new_fake_journal.games[0].players == ["A", "B", "C", "D", "E"]
+    assert new_fake_journal.games[0].date == date20180409
+    assert new_fake_journal.games[1].players == ["AA", "BB", "CC", "DD", "EE"]
+    assert new_fake_journal.games[1].date == date20180409

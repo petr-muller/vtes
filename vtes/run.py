@@ -2,73 +2,70 @@
 
 import pathlib
 from argparse import Action, ArgumentParser
-from typing import Sequence
-
+from typing import Sequence, Union
 from tabulate import tabulate
 import dateutil.parser
 
 from vtes.game import Game, set_colorize
-from vtes.store import load_store, GameStore
+from vtes.store import PickleStore, DatabaseStore
 
-def games_command(journal_path: pathlib.Path) -> None:
+StorageBackedStore = Union[PickleStore, DatabaseStore]  # pylint: disable=invalid-name
+
+def games_command(journal: StorageBackedStore) -> None:
     """List all games in the store"""
-    with journal_path.open('rb') as journal_file:
-        store = load_store(journal_file)
+    journal.open()
 
     set_colorize(True)
     # ugh. automatically compute padding size
-    count_size = len(str(len(store)))
-    for index, game in enumerate(store):
+    count_size = len(str(len(journal)))
+    for index, game in enumerate(journal):
         print(f"{index:{count_size}d}: {game}")
 
 
-def add_command(players: Sequence[str], journal_path: pathlib.Path, date=None) -> None:
+def add_command(players: Sequence[str], journal: StorageBackedStore, date=None) -> None:
     """Create a new Game and add it to the store"""
-    if journal_path.exists():
-        with journal_path.open('rb') as journal_file:
-            store = load_store(journal_file)
-    else:
-        store = GameStore()
+    try:
+        journal.open()
+    except FileNotFoundError:
+        # No problem, we will create the file when we save
+        pass
 
-    game = Game(players, date=date)
-    store.add(game)
+    game = Game.from_table(players, date=date)
+    journal.add(game)
+    journal.save()
 
-    with journal_path.open('wb') as journal_file:
-        store.save(journal_file)
 
-def gamefix_command(game_index: int, players: Sequence[str], journal_path: pathlib.Path,
+def gamefix_command(game_index: int, players: Sequence[str], journal: StorageBackedStore,
                     date=None):
     """Change the properties of an existing game"""
-    with journal_path.open('rb') as journal_file:
-        store = load_store(journal_file)
+    journal.open()
 
     if date:
-        game = Game(players, date)
+        game = Game.from_table(players, date)
     else:
-        game = Game(players, list(store)[game_index].date)
+        game = Game.from_table(players, list(journal)[game_index].date)
 
-    store.fix(game_index, game)
+    journal.fix(game_index, game)
+    journal.save()
 
-    with journal_path.open('wb') as journal_file:
-        store.save(journal_file)
 
-def stats_command(journal_path: pathlib.Path) -> None:
+def stats_command(journal: StorageBackedStore) -> None:
     """Output various statistics"""
-    with journal_path.open('rb') as journal_file:
-        store = load_store(journal_file)
+    journal.open()
 
-    rankings = store.rankings()
+    rankings = journal.rankings()
     print(tabulate(rankings, headers=('Player', 'GW', 'VP', 'Games', "GW Ratio", "VP Snatch")))
     print("")
-    print(f"Overall statistics: {len(store)} games with {len(rankings)} players")
+    print(f"Overall statistics: {len(journal)} games with {len(rankings)} players")
 
-def decks_command(journal_path: pathlib.Path, player: str) -> None:
+
+def decks_command(journal: StorageBackedStore, player: str) -> None:
     """Prints statistics about decks involved in games in store"""
-    with journal_path.open('rb') as journal_file:
-        store = load_store(journal_file)
+    journal.open()
 
-    deck_rankings = store.decks(player)
+    deck_rankings = journal.decks(player)
     print(tabulate(deck_rankings, headers=('Deck', 'Player', 'GW', 'VP')))
+
 
 class ParsePlayerAction(Action):
     """This custom argparse Action parses a list of players"""
@@ -83,12 +80,16 @@ class ParsePlayerAction(Action):
         else:
             raise ValueError("VtES expects three to six players")
 
+
 def main(): # pragma: no cover
     """Entry point for the `vtes` command"""
 
     parser = ArgumentParser()
-    parser.add_argument("--journal-file", dest="journal_path",
-                        default=pathlib.Path.home() / ".vtes-journal", type=pathlib.Path)
+
+    storage = parser.add_mutually_exclusive_group()
+    storage.add_argument("--journal-file", dest="journal", type=PickleStore,
+                         default=PickleStore(pathlib.Path.home() / ".vtes-journal"))
+    storage.add_argument("--journal-db", dest="journal", type=DatabaseStore)
     subcommands = parser.add_subparsers()
 
     add = subcommands.add_parser("add")
