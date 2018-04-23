@@ -175,6 +175,8 @@ class PickleStore():
         for game in self.store:
             if not hasattr(game, "date"):
                 setattr(game, "date", None)
+            if not hasattr(game, "namespace"):
+                setattr(game, "namespace", None)
 
     def save(self) -> None:
         """Save the store to a pickle file"""
