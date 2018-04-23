@@ -9,6 +9,10 @@ from tests.fixtures.commands import vtes_command, five_games
 def execute(vtes_command):
     vtes_command.execute()
 
+@when('I invoke vtes add')
+def vtes_add(vtes_command):
+    vtes_command.add()
+
 @then('command finishes successfully')
 def check_command_passed(vtes_command):
     assert vtes_command.completed.returncode == 0

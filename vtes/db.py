@@ -33,16 +33,21 @@ class DatabaseGameModel(DatabaseBaseModel):
 
         return db_game
 
-    def as_game(self) -> Game:
-        """Returns a 'Game' object from a database object"""
-        players: Sequence[Player] = [player.as_player() for player in self.players]
-        return Game(players, self.winner, self.winning_points, self.date)
-
     @staticmethod
     def all_games() -> Sequence[Game]:
         """Return a list of all 'Game' objects"""
         games = DatabaseGameModel.select()
         return [game.as_game() for game in games]
+
+    @property
+    def namespaces(self):
+        """Return a game namespace list"""
+        return None
+
+    def as_game(self) -> Game:
+        """Returns a 'Game' object from a database object"""
+        players: Sequence[Player] = [player.as_player() for player in self.players]
+        return Game(players, self.winner, self.winning_points, self.date, self.namespaces)
 
 
 class DatabasePlayerModel(DatabaseBaseModel):
