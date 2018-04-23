@@ -10,10 +10,6 @@ from tests.fixtures.commands import vtes_command
 
 scenarios('features/simple_games.feature')
 
-@when('I invoke vtes add')
-def vtes_add(vtes_command):
-    vtes_command.add()
-
 @when("I specify <count> players")
 def x_players(count, vtes_command):
     vtes_command.with_arguments([f"player_{x}" for x in range(int(count))])

@@ -2,6 +2,7 @@
 
 import pathlib
 from argparse import Action, ArgumentParser
+import datetime
 from typing import Sequence, Union
 from tabulate import tabulate
 import dateutil.parser
@@ -22,7 +23,8 @@ def games_command(journal: StorageBackedStore) -> None:
         print(f"{index:{count_size}d}: {game}")
 
 
-def add_command(players: Sequence[str], journal: StorageBackedStore, date=None) -> None:
+def add_command(players: Sequence[str], journal: StorageBackedStore,
+                date: datetime.datetime = None, namespace: str = None) -> None:
     """Create a new Game and add it to the store"""
     try:
         journal.open()
@@ -30,13 +32,13 @@ def add_command(players: Sequence[str], journal: StorageBackedStore, date=None) 
         # No problem, we will create the file when we save
         pass
 
-    game = Game.from_table(players, date=date)
+    game = Game.from_table(players, date=date, namespace=namespace)
     journal.add(game)
     journal.save()
 
 
 def gamefix_command(game_index: int, players: Sequence[str], journal: StorageBackedStore,
-                    date=None):
+                    date: datetime.datetime = None):
     """Change the properties of an existing game"""
     journal.open()
 
@@ -94,6 +96,7 @@ def main(): # pragma: no cover
 
     add = subcommands.add_parser("add")
     add.add_argument("--date", default=None, type=dateutil.parser.parse)
+    add.add_argument("--namespace", default=None)
     add.add_argument("players", action=ParsePlayerAction, nargs='*')
     add.set_defaults(func=add_command)
 
