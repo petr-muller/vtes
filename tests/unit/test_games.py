@@ -69,8 +69,8 @@ def test_namespace():
     table = ("P1:0", "P2:2", "P3:3", "P4", "P5")
     game = Game.from_table(table, date=dateutil.parser.parse("2018-03-20"), namespace="something")
     assert list(game.namespace) == ["something"]
-    assert str(game) == "2018-03-20: P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5 (something)"
+    assert str(game) == "2018-03-20: P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5 | something"
 
     game = Game.from_table(table, date=dateutil.parser.parse("2018-03-20"), namespace="something/else")
     assert list(game.namespace) == ["something", "else"]
-    assert str(game) == "2018-03-20: P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5 (something/else)"
+    assert str(game) == "2018-03-20: P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5 | something/else"

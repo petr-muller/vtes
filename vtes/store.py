@@ -4,7 +4,7 @@ import pickle
 import pathlib
 from typing import Sequence, List, Dict, Tuple
 from vtes.game import Game, Player
-from vtes.db import DATABASE, DatabaseGameModel, DatabasePlayerModel
+from vtes.db import DATABASE, DatabaseGameModel, DatabasePlayerModel, DatabaseNamespaceModel
 
 class Ranking:
     """Represents a ranking of a player in a game series"""
@@ -219,7 +219,7 @@ class DatabaseStore():
         """Connect to a database and ensure all tables exist"""
         DATABASE.init(str(self.journal_path))
         DATABASE.connect()
-        DATABASE.create_tables([DatabaseGameModel, DatabasePlayerModel])
+        DATABASE.create_tables([DatabaseGameModel, DatabasePlayerModel, DatabaseNamespaceModel])
 
     @staticmethod
     def add(game: Game) -> None:

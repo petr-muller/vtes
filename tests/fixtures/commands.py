@@ -44,12 +44,23 @@ class VTESRunnerProxy():
         self._vtes_command.extend(arguments)
         return self
 
+    def namespace(self, namespace: str):
+        self._vtes_command.extend(("--namespace", namespace))
+        return self
+
     def execute(self):
         print(self.base + self._storage + tuple(self._vtes_command))
         self.completed = subprocess.run(self.base + self._storage + tuple(self._vtes_command),
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                         encoding='utf-8')
         return self
+
+    def assert_ok(self):
+        try:
+            assert self.completed.returncode == 0
+        except AssertionError:
+            print(self.completed.stderr)
+            raise
 
 @pytest.fixture
 def vtes_command(tmpdir):

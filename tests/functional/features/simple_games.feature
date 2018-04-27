@@ -22,6 +22,7 @@ Scenario Outline: Refuse games with not three to six players
 Scenario: List logged game
     Given I logged five games
     When I invoke vtes games
+    And I submit the command
     Then command finishes successfully
     And five games are listed
     And listed games have identifiers
@@ -47,6 +48,7 @@ Scenario: Add games with decks and victory points
 Scenario Outline: List game with victory points
     Given I logged game with <count> players where <winning> player had all VPs
     When I invoke vtes games
+    And I submit the command
     Then game with <count> players is listed with <winning> player having all VPs and GW
 
     Examples: Vertical
@@ -56,11 +58,13 @@ Scenario Outline: List game with victory points
 Scenario: List game with decks
     Given I logged game with decks
     When I invoke vtes games
+    And I submit the command
     Then game is listed with decks
 
 Scenario: List game with decks and victory points
     Given I logged game with decks and victory points
     When I invoke vtes games
+    And I submit the command
     Then game is listed with decks and victory points
 
 Scenario: Add games with date

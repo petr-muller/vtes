@@ -110,6 +110,6 @@ class Game:
 
         date: str = "{date}: ".format(date=self.date.date().isoformat()) if self.date else ""
         table: str = " \u25b6 ".join(players)
-        namespace: str = " ({ns})".format(ns="/".join(self.namespace)) if self.namespace else ""
+        namespace: str = " | {ns}".format(ns="/".join(self.namespace)) if self.namespace else ""
 
         return f"{date}{table}{namespace}"

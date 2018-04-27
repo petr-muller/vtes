@@ -59,3 +59,21 @@ def listed_deck_rankings(vtes_command):
     assert output[2].startswith("Deck    Narpas         1/1 (100%)  3/5 (60%)")
     assert output[3].startswith("Deck    sor_garcya     1/1 (100%)  3/5 (60%)")
     assert output[4].startswith("Deck 2  Afri           1/2 (50%)   5/10 (50%)")
+
+@when('I invoke vtes games')
+def vtes_games(vtes_command):
+    vtes_command.games()
+
+@then('game is listed with namespace')
+def listed_with_namespace(vtes_command):
+    players = [f"{player} ({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
+    players = " \u25b6 ".join(players)
+    output = vtes_command.completed.stdout
+    assert output.startswith(f"0: {players} | namespace\n")
+
+@then('game is listed with multi level namespace')
+def listed_with_ml_namespace(vtes_command):
+    players = [f"{player} ({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
+    players = " \u25b6 ".join(players)
+    output = vtes_command.completed.stdout
+    assert output.startswith(f"0: {players} | name/spa/ce\n")
