@@ -7,6 +7,11 @@ from tests.fixtures.commands import vtes_command, five_games
 
 scenarios('features/database.feature')
 
+DECKS_5 = ("Pascek Bruise & Vote", "Synesios Summon History", "Malgorzata", "BH Assamite Rush",
+           "Anarchy in the Wild West")
+PLAYERS_5 = ("Zerato", "Vladish", "preston", "XZealot", "Afri")
+
+
 @when('I invoke vtes add with --journal-db and --journal-file')
 def pickle_and_db(tmpdir, vtes_command):
     # pylint: disable=protected-access
@@ -44,3 +49,23 @@ def five_games_listed(vtes_command):
 def change_game_1(vtes_command):
     vtes_command.with_database().gamefix().with_arguments(("1", "Felipe(dECK):0", "aFRI(Deck):0",
                                                            "XZealot(Deck):3", "Cooper(Deck):1"))
+
+@given('I logged game with namespace to database')
+def log_game_with_namespace(tmpdir):
+    arguments = [f"{player}({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
+    vtes_command(tmpdir).with_database() \
+                        .add() \
+                        .with_arguments(arguments) \
+                        .namespace("namespace") \
+                        .execute() \
+                        .assert_ok()
+
+@given('I logged game with multi level namespace to database')
+def log_game_with_ml_namespace(tmpdir):
+    arguments = [f"{player}({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
+    vtes_command(tmpdir).with_database() \
+                        .add() \
+                        .with_arguments(arguments) \
+                        .namespace("name/spa/ce") \
+                        .execute() \
+                        .assert_ok()

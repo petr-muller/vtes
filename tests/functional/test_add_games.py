@@ -63,10 +63,6 @@ def log_game_with_decks(tmpdir):
     arguments = [f"{player}({deck})" for player, deck in zip(PLAYERS_5, DECKS_5)]
     vtes_command(tmpdir).add().with_arguments(arguments).execute()
 
-@when('I invoke vtes games')
-def vtes_games(vtes_command):
-    vtes_command.games().execute()
-
 @then('five games are listed')
 def five_games_listed(vtes_command):
     output = [line for line in vtes_command.completed.stdout.split("\n") if line]

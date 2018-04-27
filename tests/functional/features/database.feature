@@ -33,6 +33,18 @@ Scenario: Database and pickle are mutually exclusive
     And I submit the command
     Then command finishes unsuccessfully
 
+Scenario: List game with namespace from a database
+    Given I logged game with namespace to database
+    When I invoke vtes games with --journal-db
+    And I submit the command
+    Then game is listed with namespace
+
+Scenario: List game with multi level namespace from a database
+    Given I logged game with multi level namespace to database
+    When I invoke vtes games with --journal-db
+    And I submit the command
+    Then game is listed with multi level namespace
+
     # This will need Games to have IDs
     # Scenario: Fix existing game in a database
     # Given I logged some games to database
