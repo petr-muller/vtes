@@ -37,15 +37,22 @@ def add_command(players: Sequence[str], journal: StorageBackedStore,
     journal.save()
 
 
-def gamefix_command(game_index: int, players: Sequence[str], journal: StorageBackedStore,
-                    date: datetime.datetime = None):
+def gamefix_command(game_index: int, journal: StorageBackedStore, players: Sequence[str] = None,
+                    date: datetime.datetime = None, namespace: str = None) -> None:
     """Change the properties of an existing game"""
     journal.open()
 
-    if date:
-        game = Game.from_table(players, date)
+    old = list(journal)[game_index]
+
+    if players:
+        game = Game.from_table(players)
     else:
-        game = Game.from_table(players, list(journal)[game_index].date)
+        game = old
+
+    game.date = date or old.date
+
+    new_namespace = namespace.split('/') if namespace else None
+    game.namespace = new_namespace or old.namespace
 
     journal.fix(game_index, game)
     journal.save()
@@ -77,11 +84,10 @@ class ParsePlayerAction(Action):
         Action.__init__(self, *args, **kwargs)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        if 2 < len(values) < 7:
+        if 2 < len(values) < 7 or namespace.func is gamefix_command:
             setattr(namespace, self.dest, values)
         else:
             raise ValueError("VtES expects three to six players")
-
 
 def main(): # pragma: no cover
     """Entry point for the `vtes` command"""
@@ -106,6 +112,7 @@ def main(): # pragma: no cover
     gamefix = subcommands.add_parser("game-fix")
     gamefix.add_argument("game_index", type=int)
     gamefix.add_argument("--date", default=None, type=dateutil.parser.parse)
+    gamefix.add_argument("--namespace", default=None)
     gamefix.add_argument("players", action=ParsePlayerAction, nargs='*')
     gamefix.set_defaults(func=gamefix_command)
 
@@ -117,6 +124,7 @@ def main(): # pragma: no cover
     stats.set_defaults(func=stats_command)
 
     args = parser.parse_args()
+
     command = args.func
     delattr(args, "func")
     command(**vars(args))

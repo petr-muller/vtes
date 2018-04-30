@@ -70,7 +70,7 @@ def test_gamefix_command(fs):
     # pylint: disable=invalid-name, unused-argument
     fake_journal = PickleStore("file")
     add_command(("1", "2", "3", "4", "5"), fake_journal)
-    gamefix_command(0, ("A", "B", "C", "D", "E"), fake_journal)
+    gamefix_command(0, fake_journal, ("A", "B", "C", "D", "E"))
 
     new_fake_journal = PickleStore("file")
     new_fake_journal.open()
@@ -85,8 +85,8 @@ def test_gamefix_command_date(fs):
 
     add_command(("1", "2", "3", "4", "5"), fake_journal, date=date20180409)
     add_command(("11", "22", "33", "44", "5"), fake_journal)
-    gamefix_command(0, ("A", "B", "C", "D", "E"), fake_journal)
-    gamefix_command(1, ("AA", "BB", "CC", "DD", "EE"), fake_journal, date=date20180409)
+    gamefix_command(0, fake_journal, ("A", "B", "C", "D", "E"))
+    gamefix_command(1, fake_journal, ("AA", "BB", "CC", "DD", "EE"), date=date20180409)
 
     new_fake_journal = PickleStore("file")
     new_fake_journal.open()
