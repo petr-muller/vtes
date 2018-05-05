@@ -146,10 +146,12 @@ class GameStore:
         if winner:
             rankings[deck_id].gw += 1
 
-    def decks(self, player: str) -> List[DeckRanking]:
+    def decks(self, player: str = None, namespace: str = None) -> List[DeckRanking]:
         """Return a list of deck rankings, sorted by GW, then VP, then games"""
         decks: Dict[Tuple[str, str], DeckRanking] = {}
         for game in self.games:
+            if namespace and not game.in_namespace(namespace.split('/')):
+                continue
             for game_player in game.player_results:
                 if player is None or player == game_player.name:
                     GameStore._include_deck_in_rankings(decks, game_player.deck, game_player.name,
@@ -195,9 +197,9 @@ class PickleStore():
         """Return a list of player rankings, sorted by GW, then VP, then games"""
         return self.store.rankings()
 
-    def decks(self, player: str) -> Sequence[DeckRanking]:
+    def decks(self, player: str = None, namespace: str = None) -> Sequence[DeckRanking]:
         """Return a list of deck rankings, sorted by GW, then VP, then games"""
-        return self.store.decks(player)
+        return self.store.decks(player=player, namespace=namespace)
 
     @property
     def games(self) -> Sequence[Game]:
@@ -239,11 +241,11 @@ class DatabaseStore():
         return store.rankings()
 
     @staticmethod
-    def decks(player: str) -> Sequence[DeckRanking]:
+    def decks(player: str = None, namespace: str = None) -> Sequence[DeckRanking]:
         """Return a list of deck rankings, sorted by GW, then VP, then games"""
         store = GameStore()
         store.games = DatabaseGameModel.all_games()
-        return store.decks(player)
+        return store.decks(player=player, namespace=namespace)
 
     def __len__(self) -> int:
         # Passing 'None' to avoid Pylint errors, WONTFIX in peewee

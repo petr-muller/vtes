@@ -25,3 +25,12 @@ Scenario: List game with multi level namespace
     When I invoke vtes games
     And I submit the command
     Then game is listed with multi level namespace
+
+# Scenario: Deck statistics for a given namespace
+#    Given I logged games with multi level namespace
+#    And I logged games with different namespaces
+#    When I invoke vtes decks
+#    And I specify namespace
+#    And I submit the command
+#    Then command finishes successfully
+#    And statistics from games with namespace are listed

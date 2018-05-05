@@ -13,6 +13,15 @@ def execute(vtes_command):
 def vtes_add(vtes_command):
     vtes_command.add()
 
+@when('I specify namespace')
+def specify_namespace(vtes_command):
+    vtes_command.namespace('name')
+
+@when('I invoke vtes decks')
+def vtes_decks(vtes_command):
+    vtes_command.decks()
+
+
 @then('command finishes successfully')
 def check_command_passed(vtes_command):
     assert vtes_command.completed.returncode == 0

@@ -6,10 +6,6 @@ from pytest_bdd import when, then, scenarios
 
 scenarios('features/decks.feature')
 
-@when('I invoke vtes decks')
-def vtes_decks(vtes_command):
-    vtes_command.decks()
-
 @when("I specify a single player")
 def single_player_decks(vtes_command):
     vtes_command.with_arguments(("Afri",))
