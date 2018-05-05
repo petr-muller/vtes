@@ -83,8 +83,8 @@ def test_store_rankings():
 
 def test_store_deck_rankings():
     store = GameStore()
-    store.add(Game.from_table(("1(A):3", "2(B):1", "3(C):1", "4(D)", "5")))
-    store.add(Game.from_table(("A(A):4", "2(B):1", "C(C)", "D", "E")))
+    store.add(Game.from_table(("1(A):3", "2(B):1", "3(C):1", "4(D)", "5"), namespace="na/me/space"))
+    store.add(Game.from_table(("A(A):4", "2(B):1", "C(C)", "D", "E"), namespace="na/me/spade"))
     rankings = store.decks(player=None)
     assert len(rankings) == 6
     assert rankings[0] == DeckRanking("A", "A", 1, 1, 4, 5)
@@ -95,6 +95,20 @@ def test_store_deck_rankings():
     player_rankings = store.decks(player="2")
     assert len(player_rankings) == 1
     assert player_rankings[0] == DeckRanking("B", "2", 0, 2, 2, 10)
+
+    store.add(Game.from_table(("A(AA):3", "2(BB):1", "C(CC):1", "D", "E"), namespace="diff/er/ent"))
+    deck_rankings = store.decks(namespace="na/me/space")
+    assert len(deck_rankings) == 4
+    assert deck_rankings[0] == DeckRanking("A", "1", 1, 1, 3, 5)
+
+    deck_rankings = store.decks(namespace="na")
+    assert len(deck_rankings) == 6
+    assert deck_rankings[0] == DeckRanking("A", "A", 1, 1, 4, 5)
+
+    deck_rankings = store.decks(player="2", namespace="na/me/spade")
+    assert len(deck_rankings) == 1
+    assert deck_rankings[0] == DeckRanking("B", "2", 0, 1, 1, 5)
+
 
 def test_gw_ratio():
     assert Ranking("aaa", 0, 0, 0).gw_ratio is None

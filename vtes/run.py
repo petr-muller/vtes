@@ -68,11 +68,10 @@ def stats_command(journal: StorageBackedStore) -> None:
     print(f"Overall statistics: {len(journal)} games with {len(rankings)} players")
 
 
-def decks_command(journal: StorageBackedStore, player: str) -> None:
+def decks_command(journal: StorageBackedStore, player: str, namespace: str) -> None:
     """Prints statistics about decks involved in games in store"""
     journal.open()
-
-    deck_rankings = journal.decks(player)
+    deck_rankings = journal.decks(player=player, namespace=namespace)
     print(tabulate(deck_rankings, headers=('Deck', 'Player', 'GW', 'VP')))
 
 
@@ -118,6 +117,7 @@ def main(): # pragma: no cover
 
     decks = subcommands.add_parser("decks")
     decks.add_argument("player", nargs='?', default=None)
+    decks.add_argument("--namespace", default=None)
     decks.set_defaults(func=decks_command)
 
     stats = subcommands.add_parser("stats")

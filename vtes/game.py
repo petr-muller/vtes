@@ -113,3 +113,17 @@ class Game:
         namespace: str = " | {ns}".format(ns="/".join(self.namespace)) if self.namespace else ""
 
         return f"{date}{table}{namespace}"
+
+    def in_namespace(self, namespace: Sequence[str]):
+        """Returns True if game is in given namespace"""
+        if self.namespace is None:
+            return False
+
+        for index, item in enumerate(namespace):
+            try:
+                if item != self.namespace[index]:
+                    return False
+            except IndexError:
+                return False
+
+        return True
