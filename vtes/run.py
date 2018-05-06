@@ -58,11 +58,11 @@ def gamefix_command(game_index: int, journal: StorageBackedStore, players: Seque
     journal.save()
 
 
-def stats_command(journal: StorageBackedStore) -> None:
+def stats_command(journal: StorageBackedStore, namespace: str = None) -> None:
     """Output various statistics"""
     journal.open()
 
-    rankings = journal.rankings()
+    rankings = journal.rankings(namespace=namespace)
     print(tabulate(rankings, headers=('Player', 'GW', 'VP', 'Games', "GW Ratio", "VP Snatch")))
     print("")
     print(f"Overall statistics: {len(journal)} games with {len(rankings)} players")
@@ -121,6 +121,7 @@ def main(): # pragma: no cover
     decks.set_defaults(func=decks_command)
 
     stats = subcommands.add_parser("stats")
+    stats.add_argument("--namespace", default=None)
     stats.set_defaults(func=stats_command)
 
     args = parser.parse_args()
