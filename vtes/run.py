@@ -12,14 +12,15 @@ from vtes.store import PickleStore, DatabaseStore
 
 StorageBackedStore = Union[PickleStore, DatabaseStore]  # pylint: disable=invalid-name
 
-def games_command(journal: StorageBackedStore) -> None:
+def games_command(journal: StorageBackedStore, namespace: str = None) -> None:
     """List all games in the store"""
     journal.open()
 
     set_colorize(True)
     # ugh. automatically compute padding size
-    count_size = len(str(len(journal)))
-    for index, game in enumerate(journal):
+    games = list(journal.filter(namespace=namespace))
+    count_size = len(str(len(games)))
+    for index, game in enumerate(games):
         print(f"{index:{count_size}d}: {game}")
 
 
@@ -106,6 +107,7 @@ def main(): # pragma: no cover
     add.set_defaults(func=add_command)
 
     games = subcommands.add_parser("games")
+    games.add_argument("--namespace", default=None)
     games.set_defaults(func=games_command)
 
     gamefix = subcommands.add_parser("game-fix")

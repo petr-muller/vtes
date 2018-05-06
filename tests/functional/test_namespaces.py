@@ -46,6 +46,7 @@ def log_games_with_diff_namespaces(tmpdir):
                                                                               DECKS_5,
                                                                               POINTS_5)]
     vtes_command(tmpdir).add().with_arguments(arguments).namespace("different/spa/ce").execute()
+    vtes_command(tmpdir).add().with_arguments(arguments).namespace("different/name/ce").execute()
     vtes_command(tmpdir).add().with_arguments(arguments).execute()
 
 @then('deck statistics from games with namespace are listed')
@@ -57,3 +58,10 @@ def deck_stats_from_namespace(vtes_command):
 def game_stats_from_namespace(vtes_command):
     output = vtes_command.completed.stdout.split('\n')
     assert output[2].startswith("Afri         3     9        3  100%        60%")
+
+@then('only games from namespace are shown')
+def games_from_namespace_listed(vtes_command):
+    output = vtes_command.completed.stdout.strip().split('\n')
+    assert len(output) == 3
+    for line in output:
+        assert " name/" in line or line.endswith('name')

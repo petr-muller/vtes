@@ -206,13 +206,20 @@ class PickleStore():
     @property
     def games(self) -> Sequence[Game]:
         """Return a sequence of games present in the store"""
-        return self.store.games
+        return list(self.store.games)
 
     def __len__(self) -> int:
         return len(self.store)
 
     def __iter__(self) -> Game:
         yield from self.store
+
+    def filter(self, namespace: str = None) -> Sequence[Game]:
+        """Return a list of Games filtered by given criteria"""
+        if namespace:
+            return [game for game in self.store.games if game.in_namespace(namespace.split('\n'))]
+
+        return self.games
 
 class DatabaseStore():
     """VtES Game Store backed by a database"""
@@ -256,3 +263,10 @@ class DatabaseStore():
 
     def __iter__(self):
         yield from DatabaseGameModel.all_games()
+
+    def filter(self, namespace: str = None):
+        """Return a list of Games filtered by given criteria"""
+        if namespace:
+            yield from [game for game in list(self) if game.in_namespace(namespace.split('\n'))]
+        else:
+            yield from self
