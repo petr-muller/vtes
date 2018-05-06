@@ -45,6 +45,15 @@ Scenario: List game with multi level namespace from a database
     And I submit the command
     Then game is listed with multi level namespace
 
+Scenario: List game with multi level namespace from a database
+    Given I logged game with multi level namespace to database
+    And I logged five games to database
+    When I invoke vtes games with --journal-db
+    And I specify namespace
+    And I submit the command
+    Then command finishes successfully
+    And only games with namespace are listed
+
     # This will need Games to have IDs
     # Scenario: Fix existing game in a database
     # Given I logged some games to database

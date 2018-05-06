@@ -69,3 +69,10 @@ def log_game_with_ml_namespace(tmpdir):
                         .namespace("name/spa/ce") \
                         .execute() \
                         .assert_ok()
+
+@then('only games with namespace are listed')
+def only_games_with_namespace(vtes_command):
+    output = vtes_command.completed.stdout.strip().split('\n')
+    assert len(output) == 1
+    for line in output:
+        assert line.endswith('name/spa/ce')

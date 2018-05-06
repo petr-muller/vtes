@@ -43,3 +43,12 @@ Scenario: Stats for a given namespace
     And I submit the command
     Then command finishes successfully
     And game statistics from games with namespace are listed
+
+Scenario: Games filtered by a given namespace
+    Given I logged games with multi level namespace
+    And I logged games with different namespaces
+    When I invoke vtes games
+    And I specify namespace
+    And I submit the command
+    Then command finishes successfully
+    And only games from namespace are shown
