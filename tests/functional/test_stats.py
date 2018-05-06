@@ -2,13 +2,9 @@
 # redefined-outer-name: fixtures unfortunately trigger this
 # pylint: disable=missing-docstring, redefined-outer-name
 
-from pytest_bdd import when, then, scenarios
+from pytest_bdd import then, scenarios
 
 scenarios('features/stats.feature')
-
-@when('I invoke vtes stats')
-def vtes_stats(vtes_command):
-    vtes_command.stats()
 
 @then('stats contain game win ratio for each player')
 def game_win_ratios(vtes_command):

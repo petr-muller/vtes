@@ -120,10 +120,12 @@ class GameStore:
         """Fix a Game already in the journal"""
         self.games[index] = game
 
-    def rankings(self) -> List[Ranking]:
+    def rankings(self, namespace: str = None) -> List[Ranking]:
         """Return a list of player rankings, sorted by GW, then VP, then games"""
         rankings: Dict[str, Ranking] = {}
         for game in self.games:
+            if namespace and not game.in_namespace(namespace.split('/')):
+                continue
             for player in game.player_results:
                 GameStore._include_player_in_rankings(rankings, player, game,
                                                       len(game.player_results))
@@ -193,9 +195,9 @@ class PickleStore():
         """Fix a Game already in the journal"""
         self.store.fix(index, game)
 
-    def rankings(self) -> Sequence[Ranking]:
+    def rankings(self, namespace: str = None) -> Sequence[Ranking]:
         """Return a list of player rankings, sorted by GW, then VP, then games"""
-        return self.store.rankings()
+        return self.store.rankings(namespace)
 
     def decks(self, player: str = None, namespace: str = None) -> Sequence[DeckRanking]:
         """Return a list of deck rankings, sorted by GW, then VP, then games"""
@@ -234,11 +236,11 @@ class DatabaseStore():
         pass
 
     @staticmethod
-    def rankings() -> Sequence[Ranking]:
+    def rankings(namespace: str = None) -> Sequence[Ranking]:
         """Return a list of player rankings, sorter by GW, then VP, then games"""
         store = GameStore()
         store.games = DatabaseGameModel.all_games()
-        return store.rankings()
+        return store.rankings(namespace)
 
     @staticmethod
     def decks(player: str = None, namespace: str = None) -> Sequence[DeckRanking]:

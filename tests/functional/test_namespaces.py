@@ -2,7 +2,7 @@
 # redefined-outer-name: fixtures unfortunately trigger this
 # pylint: disable=missing-docstring, redefined-outer-name
 
-from pytest_bdd import given, when, scenarios
+from pytest_bdd import given, when, then, scenarios
 
 from tests.fixtures.commands import vtes_command
 
@@ -47,3 +47,13 @@ def log_games_with_diff_namespaces(tmpdir):
                                                                               POINTS_5)]
     vtes_command(tmpdir).add().with_arguments(arguments).namespace("different/spa/ce").execute()
     vtes_command(tmpdir).add().with_arguments(arguments).execute()
+
+@then('deck statistics from games with namespace are listed')
+def deck_stats_from_namespace(vtes_command):
+    output = vtes_command.completed.stdout.split('\n')
+    assert output[2].startswith("Anarchy in the Wild West  Afri      3/3 (100%)  9/15 (60%)")
+
+@then('game statistics from games with namespace are listed')
+def game_stats_from_namespace(vtes_command):
+    output = vtes_command.completed.stdout.split('\n')
+    assert output[2].startswith("Afri         3     9        3  100%        60%")

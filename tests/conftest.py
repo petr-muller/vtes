@@ -13,6 +13,10 @@ def execute(vtes_command):
 def vtes_add(vtes_command):
     vtes_command.add()
 
+@when('I invoke vtes stats')
+def vtes_stats(vtes_command):
+    vtes_command.stats()
+
 @when('I specify namespace')
 def specify_namespace(vtes_command):
     vtes_command.namespace('name')
