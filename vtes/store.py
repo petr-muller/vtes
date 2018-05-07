@@ -2,13 +2,16 @@
 
 import pickle
 import pathlib
-from typing import Sequence, List, Dict, Tuple
-from vtes.game import Game, Player
+from typing import Sequence, List, Dict, Tuple, Optional, Iterator
+from vtes.game import Game, Player, GameNamespace
 from vtes.db import DATABASE, DatabaseGameModel, DatabasePlayerModel, DatabaseNamespaceModel
 
 class Ranking:
     """Represents a ranking of a player in a game series"""
     # pylint: disable=too-few-public-methods
+
+    HEADERS = ('Player', 'GW', 'VP', 'Games', "GW Ratio", "VP Snatch")
+
     def __init__(self, name: str, wins: int, points: float, games: int) -> None:
         self.player: str = name
         self.wins: int = wins
@@ -36,12 +39,12 @@ class Ranking:
                     f"{self.vp_ratio}%")
 
     @property
-    def gw_ratio(self) -> int:
+    def gw_ratio(self) -> Optional[int]:
         """Return a percentage (0-100) of games the player won"""
         return round(float(self.wins)/float(self.games)*100) if self.games else None
 
     @property
-    def vp_ratio(self) -> int:
+    def vp_ratio(self) -> Optional[int]:
         """Return a percentage (0-100) of VPs the player got"""
         if not self.vp_total:
             return None
@@ -50,13 +53,14 @@ class Ranking:
 
 class DeckRanking:
     """Represents a ranking of a deck in a game series"""
+    HEADERS = ('Deck', 'Player', 'GW', 'VP')
     def __init__(self, deck: str, player: str, gw: int, games: int, vp: int,
                  vp_total: int) -> None:
         self.deck: str = deck
         self.player: str = player
         self.gw: int = gw
         self.games: int = games
-        self.vp: int = vp
+        self.vp: float = vp
         self.vp_total: int = vp_total
 
     @property
@@ -120,11 +124,11 @@ class GameStore:
         """Fix a Game already in the journal"""
         self.games[index] = game
 
-    def rankings(self, namespace: str = None) -> List[Ranking]:
+    def rankings(self, namespace: Optional[GameNamespace] = None) -> List[Ranking]:
         """Return a list of player rankings, sorted by GW, then VP, then games"""
         rankings: Dict[str, Ranking] = {}
         for game in self.games:
-            if namespace and not game.in_namespace(namespace.split('/')):
+            if namespace and not game.in_namespace(namespace):
                 continue
             for player in game.player_results:
                 GameStore._include_player_in_rankings(rankings, player, game,
@@ -133,8 +137,9 @@ class GameStore:
         return sorted(list(rankings.values()), reverse=True)
 
     @staticmethod
-    def _include_deck_in_rankings(rankings: Dict[Tuple[str, str], DeckRanking], deck: str,
-                                  name: str, vp: int, total_vp: int, winner: bool) -> None:
+    def _include_deck_in_rankings(rankings: Dict[Tuple[str, str], DeckRanking], deck: Optional[str],
+                                  name: str, vp: Optional[float], total_vp: int,
+                                  winner: bool) -> None:
         if not deck:
             return
 
@@ -148,11 +153,12 @@ class GameStore:
         if winner:
             rankings[deck_id].gw += 1
 
-    def decks(self, player: str = None, namespace: str = None) -> List[DeckRanking]:
+    def decks(self, player: str = None,
+              namespace: Optional[GameNamespace] = None) -> List[DeckRanking]:
         """Return a list of deck rankings, sorted by GW, then VP, then games"""
         decks: Dict[Tuple[str, str], DeckRanking] = {}
         for game in self.games:
-            if namespace and not game.in_namespace(namespace.split('/')):
+            if namespace and not game.in_namespace(namespace):
                 continue
             for game_player in game.player_results:
                 if player is None or player == game_player.name:
@@ -195,11 +201,12 @@ class PickleStore():
         """Fix a Game already in the journal"""
         self.store.fix(index, game)
 
-    def rankings(self, namespace: str = None) -> Sequence[Ranking]:
+    def rankings(self, namespace: Optional[GameNamespace] = None) -> Sequence[Ranking]:
         """Return a list of player rankings, sorted by GW, then VP, then games"""
         return self.store.rankings(namespace)
 
-    def decks(self, player: str = None, namespace: str = None) -> Sequence[DeckRanking]:
+    def decks(self, player: str = None,
+              namespace: Optional[GameNamespace] = None) -> Sequence[DeckRanking]:
         """Return a list of deck rankings, sorted by GW, then VP, then games"""
         return self.store.decks(player=player, namespace=namespace)
 
@@ -211,13 +218,13 @@ class PickleStore():
     def __len__(self) -> int:
         return len(self.store)
 
-    def __iter__(self) -> Game:
+    def __iter__(self) -> Iterator[Game]:
         yield from self.store
 
-    def filter(self, namespace: str = None) -> Sequence[Game]:
+    def filter(self, namespace: Optional[GameNamespace]) -> Sequence[Game]:
         """Return a list of Games filtered by given criteria"""
         if namespace:
-            return [game for game in self.store.games if game.in_namespace(namespace.split('\n'))]
+            return [game for game in self.store.games if game.in_namespace(namespace)]
 
         return self.games
 
@@ -243,14 +250,15 @@ class DatabaseStore():
         pass
 
     @staticmethod
-    def rankings(namespace: str = None) -> Sequence[Ranking]:
+    def rankings(namespace: Optional[GameNamespace] = None) -> Sequence[Ranking]:
         """Return a list of player rankings, sorter by GW, then VP, then games"""
         store = GameStore()
         store.games = DatabaseGameModel.all_games()
         return store.rankings(namespace)
 
     @staticmethod
-    def decks(player: str = None, namespace: str = None) -> Sequence[DeckRanking]:
+    def decks(player: str = None,
+              namespace: Optional[GameNamespace] = None) -> Sequence[DeckRanking]:
         """Return a list of deck rankings, sorted by GW, then VP, then games"""
         store = GameStore()
         store.games = DatabaseGameModel.all_games()
@@ -261,12 +269,16 @@ class DatabaseStore():
         # https://github.com/coleifer/peewee/issues/1466
         return DatabaseGameModel.select().count(None)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Game]:
         yield from DatabaseGameModel.all_games()
 
-    def filter(self, namespace: str = None):
+    def filter(self, namespace: Optional[GameNamespace]):
         """Return a list of Games filtered by given criteria"""
         if namespace:
-            yield from [game for game in list(self) if game.in_namespace(namespace.split('\n'))]
+            yield from [game for game in list(self) if game.in_namespace(namespace)]
         else:
             yield from self
+
+    def fix(self, index: int, game: Game) -> None:
+        """Fix a Game already in the journal"""
+        raise NotImplementedError("game-fix command not yet implemented in DB")

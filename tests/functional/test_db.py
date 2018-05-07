@@ -3,7 +3,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name, unused-import
 
 from pytest_bdd import given, when, then, scenarios
-from tests.fixtures.commands import vtes_command, five_games
+from tests.fixtures.commands import vtes_command
 
 scenarios('features/database.feature')
 

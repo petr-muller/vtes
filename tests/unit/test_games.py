@@ -1,7 +1,8 @@
 # I do not have that high criteria for test code
 # pylint: disable=missing-docstring
 import dateutil
-from vtes.game import Game, parse_player, set_colorize
+from vtes.game import Game, parse_player, set_colorize, parse_namespace
+from pytest import raises
 
 def test_parse_player():
     player = parse_player("vtesser")
@@ -26,6 +27,13 @@ def test_parse_player_vp():
     assert player.name == "Afri"
     assert player.points == 4
     assert player.deck is None
+
+def test_parse_player_negative():
+    with raises(ValueError):
+        parse_player("")
+
+    with raises(ValueError):
+        parse_player("::::")
 
 def test_game():
     table = ("P1", "P2", "P3", "P4", "P5")
@@ -67,14 +75,14 @@ def test_date():
 def test_namespace():
     # pylint: disable=line-too-long
     table = ("P1:0", "P2:2", "P3:3", "P4", "P5")
-    game = Game.from_table(table, date=dateutil.parser.parse("2018-03-20"), namespace="something")
+    game = Game.from_table(table, date=dateutil.parser.parse("2018-03-20"), namespace=parse_namespace("something"))
     assert list(game.namespace) == ["something"]
     assert str(game) == "2018-03-20: P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5 | something"
     assert game.in_namespace(('something', ))
     assert not game.in_namespace(('something', 'else'))
     assert not game.in_namespace(('some',))
 
-    game = Game.from_table(table, date=dateutil.parser.parse("2018-03-20"), namespace="something/else")
+    game = Game.from_table(table, date=dateutil.parser.parse("2018-03-20"), namespace=parse_namespace("something/else"))
     assert list(game.namespace) == ["something", "else"]
     assert str(game) == "2018-03-20: P1 \u25b6 P2 2VP \u25b6 P3 3VP GW \u25b6 P4 \u25b6 P5 | something/else"
     assert game.in_namespace(('something',))
@@ -85,3 +93,8 @@ def test_namespace():
     game = Game.from_table(table, date=dateutil.parser.parse("2018-03-20"))
     assert not game.in_namespace(('something',))
     assert not game.in_namespace(('some', 'thing'))
+
+def test_parse_namespace():
+    assert parse_namespace(None) is None
+    assert parse_namespace("namespace") == ("namespace", )
+    assert parse_namespace("name/spa/ce") == ("name", "spa", "ce")

@@ -2,7 +2,7 @@
 
 import re
 import datetime
-from typing import Sequence, List
+from typing import Sequence, Tuple, Optional, List
 from blessings import Terminal
 
 TERM = Terminal()
@@ -16,10 +16,10 @@ PLAYER_PATTERN = r"(?P<name>[^(:]+)(\((?P<deck>.*)\)){0,1}(:(?P<points>\d(\.5){0
 class Player:
     """Represents a player result of a game"""
     # pylint: disable=too-few-public-methods
-    def __init__(self, name: str, deck: str, points: float) -> None:
+    def __init__(self, name: str, deck: Optional[str], points: Optional[float]) -> None:
         self.name: str = name
-        self.deck: str = deck
-        self.points: float = points
+        self.deck: Optional[str] = deck
+        self.points: Optional[float] = points
 
     def __str__(self) -> str:
         deck = f" ({self.deck})" if self.deck is not None else ""
@@ -32,11 +32,25 @@ def parse_player(raw_player: str) -> Player:
 
     Example: 'player(deck):3'"""
     match = re.match(PLAYER_PATTERN, raw_player)
+    if match is None:
+        raise ValueError("Cannot parse player information from '{raw_player}'")
+
     player = match.group("name")
     deck = match.group("deck") or None
     points = int(match.group("points")) if match.group("points") is not None else None
 
     return Player(player, deck, points)
+
+
+GameNamespace = Tuple[str, ...] # pylint: disable=invalid-name
+
+
+def parse_namespace(namespace: str) -> Optional[GameNamespace]:
+    """Parse 'name/spa/ce' -> ['name', 'spa', 'ce]"""
+    if namespace is not None:
+        return tuple(namespace.split('/'))
+
+    return None
 
 
 class Game:
@@ -45,7 +59,7 @@ class Game:
     COLORIZE = False
 
     @staticmethod
-    def _colorize_player_line(line: str, winner: bool = False, points: float = 0) -> str:
+    def _colorize_player_line(line: str, winner: bool = False, points: Optional[float] = 0) -> str:
         if winner:
             return TERM.green + line + TERM.normal
         elif points:
@@ -54,7 +68,7 @@ class Game:
         return line
 
     @staticmethod
-    def _make_player_line(player: Player, winner: str) -> str:
+    def _make_player_line(player: Player, winner: Optional[str]) -> str:
         player_line = str(player)
 
         if player.name == winner:
@@ -67,11 +81,11 @@ class Game:
 
     @staticmethod
     def from_table(table: Sequence[str], date: datetime.datetime = None,
-                   namespace: str = None) -> 'Game':
+                   namespace: Optional[GameNamespace] = None) -> 'Game':
         """Parse a table result definition and return a Game instance from it"""
         results: List[Player] = []
-        winning_points: float = None
-        winner: str = None
+        winning_points: Optional[float] = None
+        winner: Optional[str] = None
 
         for item in table:
             player = parse_player(item)
@@ -87,16 +101,16 @@ class Game:
                 winning_points = None
                 winner = None
 
-        return Game(results, winner, winning_points, date,
-                    namespace.split('/') if namespace else None)
+        return Game(results, winner, winning_points, date, namespace)
 
-    def __init__(self, results: Sequence[Player], winner: str, winning_points: float,
-                 date: datetime.datetime, namespace: Sequence[str]) -> None:
-        self.winning_points: float = winning_points
-        self.winner: str = winner
+    def __init__(self, results: Sequence[Player], winner: Optional[str],
+                 winning_points: Optional[float], date: Optional[datetime.datetime],
+                 namespace: Optional[GameNamespace]) -> None:
+        self.winning_points: Optional[float] = winning_points
+        self.winner: Optional[str] = winner
         self.player_results: Sequence[Player] = results
-        self.date: datetime.datetime = date
-        self.namespace: Sequence[str] = namespace
+        self.date: Optional[datetime.datetime] = date
+        self.namespace: Optional[GameNamespace] = namespace
 
     @property
     def players(self) -> Sequence[str]:

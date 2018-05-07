@@ -1,6 +1,6 @@
 """Database models"""
 
-from typing import Sequence
+from typing import Sequence, Optional, List
 
 import peewee as pw
 
@@ -47,11 +47,9 @@ class DatabaseGameModel(DatabaseBaseModel):
     @staticmethod
     def db_create(game: Game) -> 'DatabaseGameModel':
         """Given a 'Game' object, create its image in the database"""
+        namespace: Optional[DatabaseNamespaceModel] = None
         if game.namespace:
             namespace = DatabaseNamespaceModel.db_create(game.namespace)
-        else:
-            namespace = None
-
 
         db_game: DatabaseGameModel = DatabaseGameModel.create(winning_points=game.winning_points,
                                                               winner=game.winner, date=game.date,
@@ -63,7 +61,7 @@ class DatabaseGameModel(DatabaseBaseModel):
         return db_game
 
     @staticmethod
-    def all_games() -> Sequence[Game]:
+    def all_games() -> List[Game]:
         """Return a list of all 'Game' objects"""
         games = DatabaseGameModel.select()
         return [game.as_game() for game in games]
