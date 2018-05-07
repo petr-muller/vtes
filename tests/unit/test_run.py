@@ -32,22 +32,22 @@ def test_parse_players():
 def test_games_command(mock_print, store_with_two_games):
     store_with_two_games.save()
 
-    games_command(store_with_two_games)
+    games_command(store_with_two_games, namespace=None)
     assert mock_print.call_count == 2
 
 @patch('builtins.print')
 def test_stats_command(mock_print, store_with_two_games):
     store_with_two_games.save()
 
-    stats_command(store_with_two_games)
+    stats_command(store_with_two_games, namespace=None)
     assert mock_print.call_count == 3
 
 def test_add_command_when_exists(store_with_two_games, fs):
     # pylint: disable=invalid-name, unused-argument
     store_with_two_games.save()
 
-    add_command(("1", "2", "3", "4", "5"), store_with_two_games)
-    add_command(("2", "3", "4", "5", "6"), store_with_two_games)
+    add_command(("1", "2", "3", "4", "5"), store_with_two_games, date=None, namespace=None)
+    add_command(("2", "3", "4", "5", "6"), store_with_two_games, date=None, namespace=None)
 
     new_store = PickleStore("file")
     new_store.open()
@@ -58,8 +58,8 @@ def test_add_command_when_not_exists(fs):
     # pylint: disable=invalid-name, unused-argument
     fake_journal = PickleStore("file")
 
-    add_command(("1", "2", "3", "4", "5"), fake_journal)
-    add_command(("2", "3", "4", "5", "6"), fake_journal)
+    add_command(("1", "2", "3", "4", "5"), fake_journal, date=None, namespace=None)
+    add_command(("2", "3", "4", "5", "6"), fake_journal, date=None, namespace=None)
 
     new_fake_journal = PickleStore("file")
     new_fake_journal.open()
@@ -69,8 +69,8 @@ def test_add_command_when_not_exists(fs):
 def test_gamefix_command(fs):
     # pylint: disable=invalid-name, unused-argument
     fake_journal = PickleStore("file")
-    add_command(("1", "2", "3", "4", "5"), fake_journal)
-    gamefix_command(0, fake_journal, ("A", "B", "C", "D", "E"))
+    add_command(("1", "2", "3", "4", "5"), fake_journal, date=None, namespace=None)
+    gamefix_command(0, fake_journal, ("A", "B", "C", "D", "E"), date=None, namespace=None)
 
     new_fake_journal = PickleStore("file")
     new_fake_journal.open()
@@ -83,10 +83,11 @@ def test_gamefix_command_date(fs):
     fake_journal = PickleStore("file")
     date20180409 = dateutil.parser.parse("2018-04-09")
 
-    add_command(("1", "2", "3", "4", "5"), fake_journal, date=date20180409)
-    add_command(("11", "22", "33", "44", "5"), fake_journal)
-    gamefix_command(0, fake_journal, ("A", "B", "C", "D", "E"))
-    gamefix_command(1, fake_journal, ("AA", "BB", "CC", "DD", "EE"), date=date20180409)
+    add_command(("1", "2", "3", "4", "5"), fake_journal, date=date20180409, namespace=None)
+    add_command(("11", "22", "33", "44", "5"), fake_journal, date=None, namespace=None)
+    gamefix_command(0, fake_journal, ("A", "B", "C", "D", "E"), date=None, namespace=None)
+    gamefix_command(1, fake_journal, ("AA", "BB", "CC", "DD", "EE"), date=date20180409,
+                    namespace=None)
 
     new_fake_journal = PickleStore("file")
     new_fake_journal.open()
