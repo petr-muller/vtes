@@ -1,8 +1,8 @@
 # I do not have that high criteria for test code
 # pylint: disable=missing-docstring
 import dateutil
-from vtes.game import Game, parse_player, set_colorize, parse_namespace
 from pytest import raises
+from vtes.game import Game, parse_player, set_colorize, parse_namespace
 
 def test_parse_player():
     player = parse_player("vtesser")
